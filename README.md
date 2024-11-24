@@ -17,7 +17,7 @@ Installation of the project is carried out in the following order:
 -------------------
 Installing from git repository:
 
-`git clone https://github.com/ShokirjonMK/eutas-api.git`
+`git clone https://github.com/ShokirjonMK/sarbon-api.git`
 
 `composer update`
 
