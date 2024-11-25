@@ -279,69 +279,69 @@ class StudentUser extends ParentUser
                             'is_deleted' => 0
                         ]);
 
-                        if ($group) {
-
-                            $newEduSemestr = $group->activeEduSemestr;
-                            $eduSemestrSubject = $group->activeEduSemestr->eduSemestrSubjects;
-
-                            $newStudentGroup = new StudentGroup();
-                            $newStudentGroup->student_id = $student->id;
-                            $newStudentGroup->group_id = $group->id;
-                            $newStudentGroup->edu_year_id = $newEduSemestr->edu_year_id;
-                            $newStudentGroup->edu_plan_id = $newEduSemestr->edu_plan_id;
-                            $newStudentGroup->edu_semestr_id = $newEduSemestr->id;
-                            $newStudentGroup->edu_form_id = $newEduSemestr->edu_form_id;
-                            $newStudentGroup->semestr_id = $newEduSemestr->semestr_id;
-                            $newStudentGroup->course_id = $newEduSemestr->course_id;
-                            $newStudentGroup->faculty_id = $newEduSemestr->faculty_id;
-                            $newStudentGroup->direction_id = $newEduSemestr->direction_id;
-                            if (!$newStudentGroup->validate()) {
-                                $errors[] = $newStudentGroup->errors;
-                            } else {
-                                $newStudentGroup->save(false);
-                                $student->group_id = $newStudentGroup->group_id;
-                                $student->faculty_id = $newStudentGroup->faculty_id;
-                                $student->direction_id = $newStudentGroup->direction_id;
-                                $student->course_id = $newStudentGroup->course_id;
-                                $student->edu_year_id = $newStudentGroup->edu_year_id;
-                                $student->edu_type_id = $newEduSemestr->edu_type_id;
-                                $student->edu_plan_id = $newStudentGroup->edu_plan_id;
-                                $student->edu_form_id = $newStudentGroup->edu_form_id;
-                                $student->edu_lang_id = $group->language_id;
-                                $student->update(false);
-                                $result = SemestrUpdate::new($newStudentGroup , $eduSemestrSubject);
-                                if (!$result['is_ok']) {
-                                    $transaction->rollBack();
-                                    return simplify_errors($result['errors']);
-                                }
-
-                                $timeTables = Timetable::find()
-                                    ->where([
-                                        'group_id' => $group->id,
-                                        'edu_semestr_id' => $newEduSemestr->id,
-                                        'two_group' => 1,
-                                        'group_type' => 1,
-                                        'status' => 1,
-                                        'is_deleted' => 0
-                                    ])->all();
-
-                                if (count($timeTables) > 0) {
-                                    foreach ($timeTables as $timeTable) {
-                                        $newTimetableStudent = new TimetableStudent();
-                                        $newTimetableStudent->ids_id = $timeTable->ids;
-                                        $newTimetableStudent->group_id = $group->id;
-                                        $newTimetableStudent->student_id = $student->id;
-                                        $newTimetableStudent->student_user_id = $student->user_id;
-                                        $newTimetableStudent->group_type = 1;
-                                        $newTimetableStudent->save(false);
-                                    }
-                                }
-
-                            }
-
-                        } else {
-                            $errors[] = _e('Group not found.');
-                        }
+//                        if ($group) {
+//
+//                            $newEduSemestr = $group->activeEduSemestr;
+//                            $eduSemestrSubject = $group->activeEduSemestr->eduSemestrSubjects;
+//
+//                            $newStudentGroup = new StudentGroup();
+//                            $newStudentGroup->student_id = $student->id;
+//                            $newStudentGroup->group_id = $group->id;
+//                            $newStudentGroup->edu_year_id = $newEduSemestr->edu_year_id;
+//                            $newStudentGroup->edu_plan_id = $newEduSemestr->edu_plan_id;
+//                            $newStudentGroup->edu_semestr_id = $newEduSemestr->id;
+//                            $newStudentGroup->edu_form_id = $newEduSemestr->edu_form_id;
+//                            $newStudentGroup->semestr_id = $newEduSemestr->semestr_id;
+//                            $newStudentGroup->course_id = $newEduSemestr->course_id;
+//                            $newStudentGroup->faculty_id = $newEduSemestr->faculty_id;
+//                            $newStudentGroup->direction_id = $newEduSemestr->direction_id;
+//                            if (!$newStudentGroup->validate()) {
+//                                $errors[] = $newStudentGroup->errors;
+//                            } else {
+//                                $newStudentGroup->save(false);
+//                                $student->group_id = $newStudentGroup->group_id;
+//                                $student->faculty_id = $newStudentGroup->faculty_id;
+//                                $student->direction_id = $newStudentGroup->direction_id;
+//                                $student->course_id = $newStudentGroup->course_id;
+//                                $student->edu_year_id = $newStudentGroup->edu_year_id;
+//                                $student->edu_type_id = $newEduSemestr->edu_type_id;
+//                                $student->edu_plan_id = $newStudentGroup->edu_plan_id;
+//                                $student->edu_form_id = $newStudentGroup->edu_form_id;
+//                                $student->edu_lang_id = $group->language_id;
+//                                $student->update(false);
+//                                $result = SemestrUpdate::new($newStudentGroup , $eduSemestrSubject);
+//                                if (!$result['is_ok']) {
+//                                    $transaction->rollBack();
+//                                    return simplify_errors($result['errors']);
+//                                }
+//
+//                                $timeTables = Timetable::find()
+//                                    ->where([
+//                                        'group_id' => $group->id,
+//                                        'edu_semestr_id' => $newEduSemestr->id,
+//                                        'two_group' => 1,
+//                                        'group_type' => 1,
+//                                        'status' => 1,
+//                                        'is_deleted' => 0
+//                                    ])->all();
+//
+//                                if (count($timeTables) > 0) {
+//                                    foreach ($timeTables as $timeTable) {
+//                                        $newTimetableStudent = new TimetableStudent();
+//                                        $newTimetableStudent->ids_id = $timeTable->ids;
+//                                        $newTimetableStudent->group_id = $group->id;
+//                                        $newTimetableStudent->student_id = $student->id;
+//                                        $newTimetableStudent->student_user_id = $student->user_id;
+//                                        $newTimetableStudent->group_type = 1;
+//                                        $newTimetableStudent->save(false);
+//                                    }
+//                                }
+//
+//                            }
+//
+//                        } else {
+//                            $errors[] = _e('Group not found.');
+//                        }
                     }
                 }
             } else {
