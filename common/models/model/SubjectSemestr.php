@@ -51,6 +51,7 @@ class SubjectSemestr extends \yii\db\ActiveRecord
     {
         return [
             [['subject_id','semestr_id', 'edu_year_id', 'subject_type_id' , 'edu_form_id' , 'credit'], 'required'],
+            [['name' , 'description'] , 'string' , 'max' => 255],
             [['subject_id','semestr_id', 'kafedra_id','edu_year_id', 'subject_type_id' , 'edu_form_id' , 'credit' , 'kafedra_id', 'status',  'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
         ];
     }
@@ -60,6 +61,8 @@ class SubjectSemestr extends \yii\db\ActiveRecord
     {
         $fields =  [
             'id',
+            'name',
+            'description',
             'subject_id',
             'semestr_id',
             'edu_year_id',
