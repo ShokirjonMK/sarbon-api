@@ -95,7 +95,9 @@ class SubjectTopicController extends ApiActiveController
 
         $post = Yii::$app->request->post();
         $modelOrder = $model->order;
+        $oldModel = $model;
         $this->load($model, $post);
+        $model->subject_id = $oldModel->subjectSemestr->subject_id;
         $result = SubjectTopic::updateItem($model, $post , $modelOrder);
         if (!is_array($result)) {
             return $this->response(1, _e($this->controller_name . ' successfully updated.'), $model, null, ResponseStatus::OK);
