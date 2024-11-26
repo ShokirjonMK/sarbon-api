@@ -17,6 +17,7 @@ use common\models\model\Nationality;
 use common\models\model\Partiya;
 use common\models\model\Student;
 use common\models\model\SubjectCategory;
+use common\models\model\SubjectSemestr;
 use common\models\model\TeacherAccess;
 use common\models\model\PasswordEncrypts;
 use common\models\model\TimetableDate;
@@ -1183,25 +1184,32 @@ class User extends CommonUser
                                         $teacherAccess = json_decode(str_replace("'", "", $post['teacherAccess']));
                                         foreach (TeacherAccess::findAll(['user_id' => $model->id]) as $teacherAccessOne) {
                                             $teacherAccessOne->is_deleted = 1;
-                                            $teacherAccessOne->save();
+                                            $teacherAccessOne->status = 0;
+                                            $teacherAccessOne->save(false);
                                         }
-                                        foreach ($teacherAccess as $subjectIds => $subjectIdsValues) {
-                                            if (is_array($subjectIdsValues)) {
-                                                foreach ($subjectIdsValues as $langId) {
-                                                    $teacherAccessHas = TeacherAccess::findOne([
-                                                        'user_id' => $model->id,
-                                                        'subject_id' => $subjectIds,
-                                                        'language_id' => $langId,
-                                                    ]);
-                                                    if ($teacherAccessHas) {
-                                                        $teacherAccessHas->is_deleted = 0;
-                                                        $teacherAccessHas->save();
-                                                    } else {
-                                                        $teacherAccessNew = new TeacherAccess();
-                                                        $teacherAccessNew->user_id = $model->id;
-                                                        $teacherAccessNew->subject_id = $subjectIds;
-                                                        $teacherAccessNew->language_id = $langId;
-                                                        $teacherAccessNew->save();
+                                        foreach ($teacherAccess as $subjectSemestrId => $subjectIdsValues) {
+                                            $subjectSemestr = SubjectSemestr::findOne($subjectSemestrId);
+                                            if ($subjectSemestr) {
+                                                if (is_array($subjectIdsValues)) {
+                                                    foreach ($subjectIdsValues as $langId) {
+                                                        $teacherAccessHas = TeacherAccess::findOne([
+                                                            'user_id' => $model->id,
+                                                            'subject_semestr_id' => $subjectSemestrId,
+                                                            'subject_id' => $subjectSemestr->subject_id,
+                                                            'language_id' => $langId,
+                                                        ]);
+                                                        if ($teacherAccessHas) {
+                                                            $teacherAccessHas->is_deleted = 0;
+                                                            $teacherAccessHas->status = 1;
+                                                            $teacherAccessHas->save(false);
+                                                        } else {
+                                                            $teacherAccessNew = new TeacherAccess();
+                                                            $teacherAccessNew->user_id = $model->id;
+                                                            $teacherAccessNew->subject_semestr_id = $subjectSemestrId;
+                                                            $teacherAccessNew->subject_id = $subjectSemestr->subject_id;
+                                                            $teacherAccessNew->language_id = $langId;
+                                                            $teacherAccessNew->save(false);
+                                                        }
                                                     }
                                                 }
                                             }

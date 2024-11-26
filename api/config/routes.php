@@ -56,6 +56,7 @@ $controllers = [
     'user',
     'department',
     'subject',
+    'subject-semestr',
     'subject-topic',
     'nationality',
     'languages',
