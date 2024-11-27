@@ -64,7 +64,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             [
                 [
                     'edu_semestr_id',
-                    'subject_id'
+                    'subject_semestr_id'
                 ], 'required'
             ],
             //    [['edu_semestr_id', 'subject_id', 'subject_type_id', 'credit', 'all_ball_yuklama', 'is_checked', 'max_ball'], 'required'],
@@ -74,6 +74,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                     'edu_semestr_id',
                     'faculty_id',
                     'direction_id',
+                    'subject_semestr_id',
                     'subject_id',
                     'subject_type_id',
                     'all_ball_yuklama',
@@ -91,6 +92,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             [['credit', 'auditory_time'], 'double'],
             [['edu_semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduSemestr::className(), 'targetAttribute' => ['edu_semestr_id' => 'id']],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['subject_id' => 'id']],
+            [['subject_semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectSemestr::className(), 'targetAttribute' => ['subject_semestr_id' => 'id']],
             [['subject_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectType::className(), 'targetAttribute' => ['subject_type_id' => 'id']],
             [['faculty_id'], 'exist', 'skipOnError' => true, 'targetClass' => Faculty::className(), 'targetAttribute' => ['faculty_id' => 'id']],
             [['direction_id'], 'exist', 'skipOnError' => true, 'targetClass' => Direction::className(), 'targetAttribute' => ['direction_id' => 'id']],
@@ -452,7 +454,18 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         }
 
         $eduSemestr = $model->eduSemestr;
-        $subjectSemestr = $model->subjectSemestr;
+        $subjectSemestr = SubjectSemestr::findOne([
+            'edu_year_id' => $eduSemestr->id,
+            'edu_form_id' => $eduSemestr,
+            'semestr_id' => $eduSemestr->semestr_id,
+            'id' => $post['subject_semestr_id']
+        ]);
+
+        if (!$subjectSemestr) {
+            $errors[] = _e('Subject Semestr errors.');
+            $transaction->rollBack();
+            return simplify_errors($errors);
+        }
 
         $model->subject_id = $subjectSemestr->subject_id;
         $model->subject_type_id = $subjectSemestr->subject_type_id;
@@ -653,6 +666,12 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                             $EduSemestrExamsType->max_ball = $examsTypeMaxBal1;
                             $EduSemestrExamsType->save(false);
                         }
+                        StudentMark::updateAll(['max_ball' => $examsTypeMaxBal1],
+                            [
+                                'edu_semestr_subject_id' => $model->id,
+                                'exam_type_id' => $examsTypeId1,
+                                'is_deleted' => 0
+                            ]);
                         $max_ball = $max_ball + $examsTypeMaxBal1;
                     }
                 }
@@ -688,6 +707,9 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         } else {
             EduSemestrSubjectCategoryTime::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id]);
             EduSemestrExamsType::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id]);
+            StudentSemestrSubject::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
+            StudentSemestrSubjectVedomst::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
+            StudentMark::updateAll(['is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
             $model->is_deleted = 1;
             $model->save(false);
         }
