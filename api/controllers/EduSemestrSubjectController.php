@@ -25,6 +25,7 @@ class EduSemestrSubjectController extends ApiActiveController
     {
         return [];
     }
+
     public $table_name = 'edu_semestr_subject';
     public $controller_name = 'EduSemestrSubject';
 
