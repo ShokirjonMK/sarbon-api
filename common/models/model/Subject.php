@@ -263,9 +263,10 @@ class Subject extends \yii\db\ActiveRecord
     {
         $eduYearid = Yii::$app->request->get('edu_year_id');
         $semestrId = Yii::$app->request->get('semestr_id');
+        $eduFormId = Yii::$app->request->get('edu_form_id');
 
         return $this->hasMany(SubjectSemestr::className(), ['subject_id' => 'id'])
-            ->where(['is_deleted' => 0 , 'edu_year_id' => $eduYearid, 'semestr_id' => $semestrId]);
+            ->where(['is_deleted' => 0 , 'edu_year_id' => $eduYearid, 'semestr_id' => $semestrId , 'edu_form_id' => $eduFormId]);
     }
 
     public function getTopicsCount() {
