@@ -133,6 +133,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             'type',
             'edu_semestr_id',
             'subject_id',
+            'subject_semestr_id',
             'subject_type_id',
             'auditory_time',
             'credit',
@@ -172,6 +173,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             'noFilterSubject',
 
             'timeTableTeacher',
+            'subjectSemestr',
             'createdBy',
             'updatedBy',
             'createdAt',
@@ -219,6 +221,11 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
     public function getFaculty()
     {
         return $this->hasOne(Faculty::className(), ['faculty_id' => 'id']);
+    }
+
+    public function getSubjectSemestr()
+    {
+        return $this->hasOne(SubjectSemestr::className(), ['id' => 'subject_semestr_id']);
     }
 
     public function getStudentMark()
@@ -434,7 +441,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         }
         $EduSemestrSubject = EduSemestrSubject::findOne([
             'edu_semestr_id' => $model->edu_semestr_id,
-            'subject_id' => $post['subject_id'] ?? null,
+            'subject_semestr_id' => $post['subject_semestr_id'] ?? null,
             'status' => 1,
             'is_deleted' => 0,
         ]);
@@ -444,78 +451,36 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             return simplify_errors($errors);
         }
 
+        $eduSemestr = $model->eduSemestr;
+        $subjectSemestr = $model->subjectSemestr;
+
+        $model->subject_id = $subjectSemestr->subject_id;
+        $model->subject_type_id = $subjectSemestr->subject_type_id;
+        $model->credit = $subjectSemestr->credit;
+
+        $model->faculty_id = $eduSemestr->faculty_id;
+        $model->direction_id = $eduSemestr->direction_id;
+        $model->save(false);
+
         if ($model->save(false)) {
-
-            $eduSemestr = $model->eduSemestr;
-
-            $eduYearId = $eduSemestr->edu_year_id;
-            if ($eduYearId == 7 || $eduYearId == 8) {
-//                $errors[] = _e('You cannot add or edit a subject to this year.');
-//                $transaction->rollBack();
-//                return simplify_errors($errors);
-            }
-
-            $subjectSillabus = Subject::findOne(['id' => $post['subject_id'] ?? null]);
-            $all_ball_yuklama = 0;
-            $max_ball = 0;
 
             $new = new SubjectVedomst();
             $new->edu_semestr_subject_id = $model->id;
-            $new->edu_semestr_id = $model->edu_semestr_id;
-            $new->edu_plan_id = $model->eduSemestr->eduPlan->id;
+            $new->edu_semestr_id = $eduSemestr->id;
+            $new->edu_plan_id = $eduSemestr->edu_plan_id;
             $new->type = 1;
             $new->status = 0;
-            $new->save(false);
-
-            $model->faculty_id = $model->eduSemestr->eduPlan->faculty_id;
-            $model->direction_id = $model->eduSemestr->eduPlan->direction_id;
-            $model->update(false);
-
-            if (isset($subjectSillabus)) {
-
-                if (isset($subjectSillabus->edu_semestr_subject_category_times)) {
-                    $EduSemestrSubjectCategoryTimes = json_decode(str_replace("'", "", $subjectSillabus->edu_semestr_subject_category_times));
-                    foreach ($EduSemestrSubjectCategoryTimes as $subjectCatId => $subjectCatValues) {
-                        if (SubjectCategory::find()->where(['id' => $subjectCatId])->exists()) {
-                            $EduSemestrSubjectCategoryTime1 = new EduSemestrSubjectCategoryTime();
-                            $EduSemestrSubjectCategoryTime1->edu_semestr_subject_id = $model->id;
-                            $EduSemestrSubjectCategoryTime1->subject_category_id = $subjectCatId;
-                            $EduSemestrSubjectCategoryTime1->hours = $subjectCatValues;
-                            $EduSemestrSubjectCategoryTime1->edu_semestr_id = $model->edu_semestr_id;
-                            $EduSemestrSubjectCategoryTime1->subject_id = $model->subject_id;
-                            $EduSemestrSubjectCategoryTime1->save(false);
-                            $all_ball_yuklama = $all_ball_yuklama + $subjectCatValues;
-                        }
-                    }
-                }
-
-                if (isset($subjectSillabus->edu_semestr_exams_types)) {
-                    $EduSemestrExamType = json_decode(str_replace("'", "", $subjectSillabus->edu_semestr_exams_types));
-                    foreach ($EduSemestrExamType as $examsTypeId => $examsTypeMaxBal) {
-                        if (ExamsType::find()->where(['id' => $examsTypeId])->exists()) {
-                            $EduSemestrExamsType1 = new EduSemestrExamsType();
-                            $EduSemestrExamsType1->edu_semestr_subject_id = $model->id;
-                            $EduSemestrExamsType1->exams_type_id = $examsTypeId;
-                            $EduSemestrExamsType1->max_ball = $examsTypeMaxBal;
-                            $EduSemestrExamsType1->save(false);
-                            $max_ball = $max_ball + $examsTypeMaxBal;
-                        }
-                    }
-                }
-                $model->all_ball_yuklama = $all_ball_yuklama;
-                $model->max_ball = $max_ball;
-                $model->subject_type_id = $subjectSillabus->subject_type_id;
-                $model->credit = $subjectSillabus->credit;
-                $model->auditory_time = $subjectSillabus->auditory_time;
+            if ($new->validate()) {
+                $errors[] = $new->errors;
             }
-
-            $model->update(false);
+            $new->save(false);
+        }
+        if (count($errors) == 0) {
             $transaction->commit();
             return true;
-        } else {
-            $transaction->rollBack();
-            return simplify_errors($errors);
         }
+        $transaction->rollBack();
+        return simplify_errors($errors);
     }
 
     public static function createItemss($model, $post)
@@ -610,9 +575,15 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
     {
         $transaction = Yii::$app->db->beginTransaction();
         $errors = [];
+
         if (!($model->validate())) {
             $errors[] = $model->errors;
         }
+
+        $subjectSemestr = $model->subjectSemestr;
+        $model->subject_id = $subjectSemestr->subject_id;
+        $model->subject_type_id = $subjectSemestr->subject_type_id;
+        $model->credit = $subjectSemestr->credit;
 
         if ($model->save(false)) {
 
@@ -623,20 +594,35 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             if (isset($post['SubjectCategory'])) {
                 $SubjectCategory = json_decode(str_replace("'", "", $post['SubjectCategory']));
                 if (isset($SubjectCategory)) {
-                    EduSemestrSubjectCategoryTime::deleteAll(['edu_semestr_subject_id' => $model->id]);
+                    EduSemestrSubjectCategoryTime::updateAll(['status' => 0], ['edu_semestr_subject_id' => $model->id]);
                     foreach ($SubjectCategory as $subjectCatId => $subjectCatValues) {
-                        if (SubjectCategory::find()->where(['id' => $subjectCatId])->exists()) {
+                        $subjectCat = SubjectCategory::findOne($subjectCatId);
+                        if ($subjectCat) {
+                            $categoryTime = EduSemestrSubjectCategoryTime::findOne([
+                                'edu_semestr_subject_id' => $model->id,
+                                'subject_category_id' => $subjectCatId,
+                            ]);
+                            if ($categoryTime) {
+                                $categoryTime->hours = $subjectCatValues;
+                                $categoryTime->subject_id = $model->subject_id;
+                                $categoryTime->status = 1;
+                                $categoryTime->is_deleted = 0;
+                                $categoryTime->update(false);
+                            } else {
+                                $EduSemestrSubjectCategoryTime = new EduSemestrSubjectCategoryTime();
+                                $EduSemestrSubjectCategoryTime->edu_semestr_subject_id = $model->id;
+                                $EduSemestrSubjectCategoryTime->subject_category_id = $subjectCatId;
+                                $EduSemestrSubjectCategoryTime->hours = $subjectCatValues;
+                                $EduSemestrSubjectCategoryTime->edu_semestr_id = $model->edu_semestr_id;
+                                $EduSemestrSubjectCategoryTime->subject_id = $model->subject_id;
+                                $EduSemestrSubjectCategoryTime->save(false);
+                            }
 
-                            $EduSemestrSubjectCategoryTime = new EduSemestrSubjectCategoryTime();
-                            $EduSemestrSubjectCategoryTime->edu_semestr_subject_id = $model->id;
-                            $EduSemestrSubjectCategoryTime->subject_category_id = $subjectCatId;
-                            $EduSemestrSubjectCategoryTime->hours = $subjectCatValues;
-                            $EduSemestrSubjectCategoryTime->edu_semestr_id = $model->edu_semestr_id;
-                            $EduSemestrSubjectCategoryTime->subject_id = $model->subject_id;
-                            $EduSemestrSubjectCategoryTime->save();
-                            $auditory_time += $subjectCatValues;
-                            $all_ball_yuklama = $all_ball_yuklama + $subjectCatValues;
-
+                            if ($subjectCat->type == 1) {
+                                $auditory_time += $subjectCatValues;
+                            } else {
+                                $all_ball_yuklama += $subjectCatValues;
+                            }
                         }
                     }
                     $model->auditory_time = $auditory_time;
@@ -644,7 +630,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                 }
             }
 
-            if ($model->auditory_time != $model->credit * Subject::CREDIT_TIME) {
+            if ($model->all_ball_yuklama != $model->credit * Subject::CREDIT_TIME) {
                 $errors[] = _e("Total hours do not equal credit hours.");
             }
 
@@ -661,16 +647,14 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                             $queryExamType->max_ball = $examsTypeMaxBal1;
                             $queryExamType->status = 1;
                             $queryExamType->save(false);
-                            $max_ball = $max_ball + $examsTypeMaxBal1;
                         } else {
                             $EduSemestrExamsType = new EduSemestrExamsType();
                             $EduSemestrExamsType->edu_semestr_subject_id = $model->id;
                             $EduSemestrExamsType->exams_type_id = $examsTypeId1;
                             $EduSemestrExamsType->max_ball = $examsTypeMaxBal1;
                             $EduSemestrExamsType->save(false);
-                            $max_ball = $max_ball + $examsTypeMaxBal1;
                         }
-
+                        $max_ball = $max_ball + $examsTypeMaxBal1;
                     }
                 }
                 $model->max_ball = $max_ball;

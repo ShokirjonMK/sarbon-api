@@ -40,7 +40,7 @@ class EduSemestrSubjectController extends ApiActiveController
 
         if (isRole("teacher")) {
             $teacherAccessSubjectIds = TeacherAccess::find()
-                ->select('subject_id')
+                ->select('subject_semestr_id')
                 ->where(['user_id' => current_user_id(), 'is_deleted' => 0]);
 
             $timeTable = TimetableDate::find()
@@ -51,7 +51,7 @@ class EduSemestrSubjectController extends ApiActiveController
                     'status' => 1,
                     'is_deleted' => 0,
                 ])
-                ->andWhere(['in' , 'subject_id' , $teacherAccessSubjectIds])
+                ->andWhere(['in' , 'subject_semestr_id' , $teacherAccessSubjectIds])
                 ->andFilterWhere(['edu_year_id' => activeYearId()]);
 
              $query->andWhere(['in' , 'id' , $timeTable]);
@@ -101,14 +101,9 @@ class EduSemestrSubjectController extends ApiActiveController
 
     public function actionUpdate($lang, $id)
     {
-//        return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::UPROCESSABLE_ENTITY);
         $model = EduSemestrSubject::findOne($id);
         if (!$model) {
             return $this->response(0, _e('Data not found.'), null, null, ResponseStatus::NOT_FOUND);
-        }
-
-        if ($model->eduSemestr->edu_year_id == 7 || $model->eduSemestr->edu_year_id == 8) {
-//            return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::UPROCESSABLE_ENTITY);
         }
 
         /*  is Self  */
@@ -123,37 +118,6 @@ class EduSemestrSubjectController extends ApiActiveController
         /*  is Self  */
 
         $post = Yii::$app->request->post();
-        $edu_semestr = EduSemestr::findOne($model->edu_semestr_id);
-
-        if (isset($edu_semestr))
-        {
-            if (isset($post['subject_type_id']) && !empty($post['subject_type_id']))
-            {
-                if ($model->subject_type_id != $post['subject_type_id'])
-                {
-                    if ($model->subject_type_id == null)
-                    {
-                        if ($post['subject_type_id']==self::REQUIRED) {
-                            $edu_semestr->required_subject_count = $edu_semestr->required_subject_count + 1;
-                        }elseif ($post['subject_type_id']==self::OPTIONAL) {
-                            $edu_semestr->optional_subject_count = $edu_semestr->optional_subject_count + 1;
-                        }
-                    } else {
-                        if ($post['subject_type_id']==self::REQUIRED) {
-                            $edu_semestr->required_subject_count = $edu_semestr->required_subject_count + 1;
-                            $edu_semestr->optional_subject_count = $edu_semestr->optional_subject_count - 1;
-                        }elseif ($post['subject_type_id']==self::OPTIONAL) {
-                            $edu_semestr->optional_subject_count = $edu_semestr->optional_subject_count + 1;
-                            $edu_semestr->required_subject_count = $edu_semestr->required_subject_count - 1;
-                        }
-                    }
-                }
-            }
-            if (empty($post['subject_type_id'])){
-                $post['subject_type_id'] = $model->subject_type_id;
-            }
-            $edu_semestr->save(false);
-        }
 
         $this->load($model, $post);
         $result = EduSemestrSubject::updateItem($model, $post);
