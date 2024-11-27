@@ -148,10 +148,7 @@ class Subject extends \yii\db\ActiveRecord
             'topics',
             'topicsCount',
 
-            'surveyAnswers',
-            'surveyAnswersSum',
-            'surveyAnswersCount',
-            'surveyAnswerAverage',
+            'subjectSemestr',
 
             'createdBy',
             'updatedBy',
@@ -254,6 +251,11 @@ class Subject extends \yii\db\ActiveRecord
     public function getTopics()
     {
         return $this->hasMany(SubjectTopic::className(), ['subject_id' => 'id'])->onCondition(['is_deleted' => 0]);
+    }
+
+    public function getSubjectSemestr()
+    {
+        return $this->hasMany(SubjectSemestr::className(), ['subject_semestr_id' => 'id'])->onCondition(['is_deleted' => 0]);
     }
 
     public function getTopicsCount() {
