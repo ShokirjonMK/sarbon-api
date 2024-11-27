@@ -482,12 +482,11 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             $new->edu_plan_id = $eduSemestr->edu_plan_id;
             $new->type = 1;
             $new->status = 0;
-            if ($new->validate()) {
+            if (!$new->validate()) {
                 $errors[] = $new->errors;
             }
             $new->save(false);
         }
-        dd(count($errors));
         if (count($errors) == 0) {
             $transaction->commit();
             return true;
