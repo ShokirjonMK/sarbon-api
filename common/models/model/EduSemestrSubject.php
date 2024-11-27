@@ -455,8 +455,8 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
 
         $eduSemestr = $model->eduSemestr;
         $subjectSemestr = SubjectSemestr::findOne([
-            'edu_year_id' => $eduSemestr->id,
-            'edu_form_id' => $eduSemestr,
+            'edu_year_id' => $eduSemestr->edu_year_id,
+            'edu_form_id' => $eduSemestr->edu_form_id,
             'semestr_id' => $eduSemestr->semestr_id,
             'id' => $post['subject_semestr_id']
         ]);
