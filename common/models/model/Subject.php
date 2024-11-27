@@ -264,7 +264,7 @@ class Subject extends \yii\db\ActiveRecord
         $eduYearid = Yii::$app->request->get('edu_year_id');
         $semestrId = Yii::$app->request->get('semestr_id');
 
-        return $this->hasMany(SubjectSemestr::className(), ['id' => 'subject_id'])
+        return $this->hasMany(SubjectSemestr::className(), ['subject_id' => 'id'])
             ->where(['is_deleted' => 0 , 'edu_year_id' => $eduYearid, 'semestr_id' => $semestrId]);
     }
 
