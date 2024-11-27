@@ -149,6 +149,7 @@ class Subject extends \yii\db\ActiveRecord
             'topicsCount',
 
             'subjectSemestr',
+            'eduYearSubjectSemestr',
 
             'createdBy',
             'updatedBy',
@@ -256,6 +257,15 @@ class Subject extends \yii\db\ActiveRecord
     public function getSubjectSemestr()
     {
         return $this->hasMany(SubjectSemestr::className(), ['id' => 'subject_semestr_id'])->onCondition(['is_deleted' => 0]);
+    }
+
+    public function getEduYearSubjectSemestr()
+    {
+        $eduYearid = Yii::$app->request->get('edu_year_id');
+        $semestrId = Yii::$app->request->get('semestr_id');
+
+        return $this->hasMany(SubjectSemestr::className(), ['id' => 'subject_semestr_id'])
+            ->onCondition(['is_deleted' => 0 , 'edu_year_id' => $eduYearid, 'semestr_id' => $semestrId]);
     }
 
     public function getTopicsCount() {
