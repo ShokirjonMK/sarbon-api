@@ -487,6 +487,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             }
             $new->save(false);
         }
+        dd(count($errors));
         if (count($errors) == 0) {
             $transaction->commit();
             return true;
