@@ -255,7 +255,7 @@ class Subject extends \yii\db\ActiveRecord
 
     public function getSubjectSemestr()
     {
-        return $this->hasMany(SubjectSemestr::className(), ['subject_semestr_id' => 'id'])->onCondition(['is_deleted' => 0]);
+        return $this->hasMany(SubjectSemestr::className(), ['id' => 'subject_semestr_id'])->onCondition(['is_deleted' => 0]);
     }
 
     public function getTopicsCount() {
