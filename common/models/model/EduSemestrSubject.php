@@ -460,7 +460,6 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
 
         $model->faculty_id = $eduSemestr->faculty_id;
         $model->direction_id = $eduSemestr->direction_id;
-        $model->save(false);
 
         if ($model->save(false)) {
 
