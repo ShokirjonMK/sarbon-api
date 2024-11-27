@@ -431,6 +431,10 @@ $routes = [
     // 'GET <lang:\w{2}>/student-attends/by-date' => 'student-attend/by-date',
 
 
+     // Edu Semestr
+     'POST <lang:\w{2}>/edu-semestr/student-subjects' => 'edu-semestr/student-subject-merge',
+
+
     // Student Import
     // 'POST <lang:\w{2}>/students/import' => 'student/import',
     // // Student Export

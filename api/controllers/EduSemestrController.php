@@ -170,4 +170,15 @@ class EduSemestrController extends ApiActiveController
         }
         return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::BAD_REQUEST);
     }
+
+    public function actionStudentSubjectMerge()
+    {
+        $post = Yii::$app->request->post();
+        $result = EduSemestr::merge($post);
+        if (!is_array($result)) {
+            return $this->response(1, _e('EduSemestr successfully merge.'), null, null, ResponseStatus::CREATED);
+        } else {
+            return $this->response(0, _e('There is an error occurred while processing.'), null, $result, ResponseStatus::UPROCESSABLE_ENTITY);
+        }
+    }
 }
