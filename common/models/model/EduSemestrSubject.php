@@ -447,7 +447,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             'status' => 1,
             'is_deleted' => 0,
         ]);
-        if (isset($EduSemestrSubject)) {
+        if ($EduSemestrSubject) {
             $errors[] = _e('This Edu Subject already exists in This Semester');
             $transaction->rollBack();
             return simplify_errors($errors);
