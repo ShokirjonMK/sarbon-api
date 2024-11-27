@@ -52,6 +52,7 @@ class EduSemestr extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
+
     public static function tableName()
     {
         return 'edu_semestr';
@@ -153,6 +154,7 @@ class EduSemestr extends \yii\db\ActiveRecord
             'semestr_id',
             'credit',
             'edu_year_id',
+            'edu_form_id',
             'start_date',
             'end_date',
             'type',
@@ -174,6 +176,7 @@ class EduSemestr extends \yii\db\ActiveRecord
             'weeks',
             'course',
             'eduPlan',
+            'eduForm',
             'eduYear',
             'semestr',
             'eduSemestrSubjects',
