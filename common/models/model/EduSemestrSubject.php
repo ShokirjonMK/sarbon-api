@@ -696,23 +696,13 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         $transaction = Yii::$app->db->beginTransaction();
         $errors = [];
 
-        $timeTable = TimeTable1::find()
-            ->where([
-                'edu_semestr_subject_id' => $model->id,
-                'subject_id' => $model->subject_id,
-                'is_deleted' => 0
-            ])->count();
-        if ($timeTable > 0) {
-            $errors[] = _e("You cannot delete a subject!");
-        } else {
-            EduSemestrSubjectCategoryTime::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id]);
-            EduSemestrExamsType::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id]);
-            StudentSemestrSubject::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
-            StudentSemestrSubjectVedomst::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
-            StudentMark::updateAll(['is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
-            $model->is_deleted = 1;
-            $model->save(false);
-        }
+        EduSemestrSubjectCategoryTime::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id]);
+        EduSemestrExamsType::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id]);
+        StudentSemestrSubject::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
+        StudentSemestrSubjectVedomst::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
+        StudentMark::updateAll(['is_deleted' => 1], ['edu_semestr_subject_id' => $model->id , 'is_deleted' => 0]);
+        $model->is_deleted = 1;
+        $model->save(false);
 
         if (count($errors) == 0) {
             $transaction->commit();
