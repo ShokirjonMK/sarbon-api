@@ -310,6 +310,7 @@ class SubjectTopic extends \yii\db\ActiveRecord
                 $data = [
                     'subject_semestr_id' => $model->subject_semestr_id,
                     'subject_category_id' => $model->subject_category_id,
+                    'lang_id' => $model->lang_id,
                     'is_deleted' => 0
                 ];
                 $orderDescOne = SubjectTopic::find()
@@ -344,6 +345,7 @@ class SubjectTopic extends \yii\db\ActiveRecord
                 ->where([
                     'subject_semestr_id' => $model->subject_semestr_id,
                     'subject_category_id' => $model->subject_category_id,
+                    'lang_id' => $model->lang_id,
                     'is_deleted' => 0
                 ])
                 ->orderBy('order desc')
@@ -354,13 +356,6 @@ class SubjectTopic extends \yii\db\ActiveRecord
                 $model->order = 1;
             }
         }
-
-
-//        if (isRole('teacher') && !isRole('mudir')) {
-//            $teacherAccess = TeacherAccess::findOne(['subject_semestr_id' => $model->subject_semestr_id, 'user_id' => current_user_id()]);
-//            $model->teacher_access_id =  $teacherAccess ? $teacherAccess->id : 0;
-//            $model->user_id = current_user_id();
-//        }
 
         if (count($errors) == 0) {
             $model->save(false);
@@ -474,10 +469,13 @@ class SubjectTopic extends \yii\db\ActiveRecord
 
         if (!($model->validate())) {
             $errors[] = $model->errors;
+            $transaction->rollBack();
+            return simplify_errors($errors);
         }
 
+        self::orderUpdate($model , $model->order);
+
         if (count($errors) == 0) {
-            $model->save(false);
             $transaction->commit();
             return true;
         }
@@ -491,30 +489,13 @@ class SubjectTopic extends \yii\db\ActiveRecord
 
         if (!($model->validate())) {
             $errors[] = $model->errors;
+            $transaction->rollBack();
+            return simplify_errors($errors);
         }
 
-        $topics = SubjectTopic::find()
-            ->where([
-                'subject_semestr_id' => $model->subject_semestr_id,
-                'subject_category_id' => $model->subject_category_id,
-                'is_deleted' => 0
-            ])
-            ->andWhere(['!=' , 'id' , $model->id])
-            ->orderBy('order asc')
-            ->all();
-        $i = 1;
-        foreach ($topics as $topic) {
-            if ($i == $post['order']) {
-                $i++;
-            }
-            $topic->order = $i;
-            $topic->save(false);
-            $i++;
-        }
-        $model->order = $post['order'];
+        self::orderUpdate($model , $post['order']);
 
-
-        if ($model->save(false)) {
+        if (count($errors) == 0) {
             $transaction->commit();
             return true;
         } else {
@@ -522,6 +503,39 @@ class SubjectTopic extends \yii\db\ActiveRecord
             return simplify_errors($errors);
         }
 
+    }
+
+    public static function orderUpdate($model , $order)
+    {
+        $topics = SubjectTopic::find()
+            ->where([
+                'subject_semestr_id' => $model->subject_semestr_id,
+                'subject_category_id' => $model->subject_category_id,
+                'lang_id' => $model->lang_id,
+                'is_deleted' => 0
+            ])
+            ->andWhere(['!=' , 'id' , $model->id])
+            ->orderBy('order asc')
+            ->all();
+
+        $t = false;
+        $i = 1;
+        foreach ($topics as $topic) {
+            if ($i == $order) {
+                $t = true;
+                $i++;
+            }
+            $topic->order = $i;
+            $topic->update(false);
+            $i++;
+        }
+        if (!$t) {
+            $model->order = $i;
+        } else {
+            $model->order = $order;
+        }
+        $model->update(false);
+        return true;
     }
 
     public static function validPostTopicTest($post) {

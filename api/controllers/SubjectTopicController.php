@@ -97,7 +97,9 @@ class SubjectTopicController extends ApiActiveController
         $modelOrder = $model->order;
         $oldModel = $model;
         $this->load($model, $post);
+        $model->subject_semestr_id = $oldModel->subject_semestr_id;
         $model->subject_id = $oldModel->subjectSemestr->subject_id;
+        $model->order = $modelOrder;
         $result = SubjectTopic::updateItem($model, $post , $modelOrder);
         if (!is_array($result)) {
             return $this->response(1, _e($this->controller_name . ' successfully updated.'), $model, null, ResponseStatus::OK);
@@ -155,9 +157,9 @@ class SubjectTopicController extends ApiActiveController
 
     public function actionDelete($lang, $id)
     {
-        $model = SubjectTopic::find()
-            ->andWhere(['id' => $id, 'is_deleted' => 0])
-            ->one();
+        $model = SubjectTopic::findOne([
+            'id' => $id, 'is_deleted' => 0
+        ]);
 
         if (!$model) {
             return $this->response(0, _e('Data not found.'), null, null, ResponseStatus::NOT_FOUND);
@@ -166,23 +168,22 @@ class SubjectTopicController extends ApiActiveController
         // remove model
         if ($model) {
             $model->is_deleted = 1;
-            if ($model->save(false)) {
+            if ($model->update(false)) {
                 $order = SubjectTopic::find()
                     ->where(['>' , 'order', $model->order])
                     ->andWhere([
-                        'subject_id'=> $model->subject_id,
+                        'subject_semestr_id'=> $model->subject_semestr_id,
                         'subject_category_id'=> $model->subject_category_id,
+                        'lang_id'=> $model->lang_id,
                         'is_deleted' => 0
-                    ])
-                    ->all();
+                    ])->all();
                 if (count($order) > 0) {
                     foreach ($order as $order_item) {
                         $order_item->order = $order_item->order - 1;
-                        $order_item->save(false);
+                        $order_item->update(false);
                     }
                 }
             }
-
             return $this->response(1, _e($this->controller_name . ' succesfully removed.'), null, null, ResponseStatus::OK);
         }
         return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::BAD_REQUEST);
