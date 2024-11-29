@@ -177,7 +177,7 @@ class Test extends \yii\db\ActiveRecord
 
     public function getSubjectSemestr()
     {
-        return $this->hasOne(SubjectSemestr::className(), ['subject_semestr_id' => 'id']);
+        return $this->hasOne(SubjectSemestr::className(), ['id' => 'subject_semestr_id']);
     }
 
     public function getTopic()
