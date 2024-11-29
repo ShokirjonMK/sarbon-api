@@ -134,6 +134,7 @@ class Test extends \yii\db\ActiveRecord
             'topic',
             'options',
             'subject',
+            'subjectSemestr',
             'language',
             'examType',
             'testBody',
@@ -172,6 +173,11 @@ class Test extends \yii\db\ActiveRecord
     public function getTestBody()
     {
         return $this->hasOne(TestBody::className(), ['test_id' => 'id'])->where(['is_deleted' => 0]);
+    }
+
+    public function getSubjectSemestr()
+    {
+        return $this->hasOne(SubjectSemestr::className(), ['subject_semestr_id' => 'id']);
     }
 
     public function getTopic()
