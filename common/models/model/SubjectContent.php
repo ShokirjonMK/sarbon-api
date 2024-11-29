@@ -73,19 +73,18 @@ class SubjectContent extends \yii\db\ActiveRecord
             [
                 [
                     'subject_topic_id',
-//                    'lang_id',
-                    'type'
+                    'type',
                 ],
                 'required'
             ],
-            [['order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
+            [['main', 'order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
             [
                 [
                     'user_id',
-                    'lang_id',
                     'type',
                     'subject_topic_id',
                     'subject_id',
+                    'subject_semestr_id',
                     'teacher_access_id',
                 ],
                 'integer'
@@ -98,13 +97,13 @@ class SubjectContent extends \yii\db\ActiveRecord
                 'safe'
             ],
 
-            [ 'file', 'string', 'max' => 255 ],
-            [ 'file_extension', 'string', 'max' => 50 ],
+            ['file', 'string', 'max' => 255],
+            ['file_extension', 'string', 'max' => 50],
 
             [['subject_topic_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectTopic::className(), 'targetAttribute' => ['subject_topic_id' => 'id']],
             [['teacher_access_id'], 'exist', 'skipOnError' => true, 'targetClass' => TeacherAccess::className(), 'targetAttribute' => ['teacher_access_id' => 'id']],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['subject_id' => 'id']],
-            [['lang_id'], 'exist', 'skipOnError' => true, 'targetClass' => Languages::className(), 'targetAttribute' => ['lang_id' => 'id']],
+            [['subject_semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectSemestr::className(), 'targetAttribute' => ['subject_semestr_id' => 'id']],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
             [['file_file'], 'file', 'skipOnEmpty' => true, 'extensions' => $this->file_fileFileExtentions, 'maxSize' => $this->file_fileFileMaxSize],
             [['file_image'], 'file', 'skipOnEmpty' => true, 'extensions' => $this->file_imageFileExtentions, 'maxSize' => $this->file_imageFileMaxSize],
@@ -148,7 +147,7 @@ class SubjectContent extends \yii\db\ActiveRecord
             'text',
             'description',
             'file',
-            'lang_id',
+            'main',
             'file_extension',
 
             'user_id',
@@ -170,6 +169,7 @@ class SubjectContent extends \yii\db\ActiveRecord
     {
         $extraFields = [
             'subject',
+            'subjectSemestr',
             'subjectTopic',
             'subjectCategory',
             'types',
@@ -199,6 +199,11 @@ class SubjectContent extends \yii\db\ActiveRecord
         return $this->hasOne(SubjectTopic::className(), ['id' => 'subject_topic_id']);
     }
 
+    public function getSubjectSemestr()
+    {
+        return $this->hasOne(SubjectSemestr::className(), ['id' => 'subject_semestr_id']);
+    }
+
     public function getTeacherAccess()
     {
         return $this->hasOne(TeacherAccess::className(), ['id' => 'teacher_access_id']);
@@ -214,49 +219,10 @@ class SubjectContent extends \yii\db\ActiveRecord
         $transaction = Yii::$app->db->beginTransaction();
         $errors = [];
 
-        if (isset($post['order'])) {
-            $orderDescOne = SubjectContent::find()
-                ->where(['subject_topic_id' => $model->subject_topic_id, 'is_deleted' => 0])
-                ->orderBy('order desc')
-                ->one();
-            if (isset($orderDescOne)) {
-                if ($orderDescOne->order+1 < $post['order']) {
-                    $model->order = $orderDescOne->order+1;
-                } elseif ($orderDescOne->order > $post['order']) {
-                    $orderUpdate = SubjectContent::find()->where([
-                        'between', 'order', $post['order'], $orderDescOne->order
-                    ])
-                        ->andWhere([ 'subject_topic_id' => $model->subject_topic_id , 'is_deleted' => 0 ])
-                        ->all();
-                    if (isset($orderUpdate)) {
-                        foreach ($orderUpdate as $orderItem) {
-                            $orderItem->order = $orderItem->order + 1;
-                            $orderItem->save(false);
-                        }
-                    }
-                } elseif ($orderDescOne->order == $post['order']) {
-                    $orderDescOne->order = $orderDescOne->order + 1;
-                    $orderDescOne->save(false);
-                }
-            } else {
-                $model->order = 1;
-            }
-        } else {
-            $orderDescOne = SubjectContent::find()
-                ->where(['subject_topic_id' => $model->subject_topic_id , 'is_deleted' => 0])
-                ->orderBy('order desc')
-                ->one();
-            if (isset($orderDescOne)) {
-                $model->order = $orderDescOne->order + 1;
-            } else {
-                $model->order = 1;
-            }
-        }
-
-
+        $subjectTopic = $model->subjectTopic;
         $model->type = self::TYPE_TEXT;
-        $model->subject_id = $model->subjectTopic->subject_id;
-        $model->lang_id = $model->subjectTopic->lang_id;
+        $model->subject_id = $subjectTopic->subject_id;
+        $model->subject_semestr_id = $subjectTopic->subject_semestr_id;
 
         /* Fayl Yuklash*/
         $model->file_file = UploadedFile::getInstancesByName('file_file');
@@ -271,7 +237,6 @@ class SubjectContent extends \yii\db\ActiveRecord
                 $errors[] = $model->errors;
             }
         }
-
         /* Fayl Yuklash*/
 
         /* Image Yuklash*/
@@ -317,8 +282,8 @@ class SubjectContent extends \yii\db\ActiveRecord
                 $errors[] = $model->errors;
             }
         }
-
         /* Audio Yuklash*/
+
         if (count($errors) > 0) {
             $transaction->rollBack();
             return simplify_errors($errors);
@@ -326,41 +291,38 @@ class SubjectContent extends \yii\db\ActiveRecord
 
         if (!($model->validate())) {
             $errors[] = $model->errors;
-
             $transaction->rollBack();
             return simplify_errors($errors);
         }
 
-
         if (isRole('teacher')) {
-
-            $teacherAccess = TeacherAccess::findOne(['subject_id' => $model->subject_id, 'user_id' => current_user_id()]);
-            $model->teacher_access_id =  $teacherAccess ? $teacherAccess->id : 0;
-            $model->user_id = current_user_id();
+            $teacherAccess = TeacherAccess::findOne([
+                'subject_semestr_id' => $model->subject_semestr_id,
+                'user_id' => current_user_id(),
+                'is_lecture' => $subjectTopic->subject_category_id,
+                'status' => 1,
+                'is_deleted' => 0
+            ]);
+            if ($teacherAccess) {
+                $model->teacher_access_id = $teacherAccess->id;
+                $model->user_id = current_user_id();
+            } else {
+                $errors[] = [_e('Teacher Access not found')];
+                $transaction->rollBack();
+                return simplify_errors($errors);
+            }
+            $model->main = 1;
+        } else {
+            $model->main = 0;
         }
 
-        if ($model->save()) {
-
-            if (!isset($post['order'])) {
-                $lastOrder = SubjectContent::find()
-                    ->where(['subject_topic_id' => $model->subject_topic_id])
-                    ->orderBy(['order' => SORT_DESC])
-                    ->select('order')
-                    ->one();
-
-                if ($lastOrder) {
-                    $model->order = $lastOrder->order + 1;
-                }
-                $model->update();
-            }
+        if ($model->save(false)) {
             $transaction->commit();
             return true;
         } else {
             $transaction->rollBack();
             return simplify_errors($errors);
         }
-
-
     }
 
     public static function updateItem($model, $post)
@@ -371,8 +333,6 @@ class SubjectContent extends \yii\db\ActiveRecord
         if (!($model->validate())) {
             $errors[] = $model->errors;
         }
-
-        // $model->type = self::TYPE_TEXT;
 
         /* Fayl Yuklash*/
         $model->file_file = UploadedFile::getInstancesByName('file_file');
@@ -434,7 +394,7 @@ class SubjectContent extends \yii\db\ActiveRecord
         }
         /* Audio Yuklash*/
 
-        if ($model->save()) {
+        if ($model->save(false)) {
             $transaction->commit();
             return true;
         } else {
