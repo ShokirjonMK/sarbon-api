@@ -74,7 +74,7 @@ class Test extends \yii\db\ActiveRecord
     {
         return [
             [
-                ['subject_id' , 'type', 'language_id'] , 'required',
+                ['subject_semestr_id' , 'type', 'language_id'] , 'required',
             ],
 
             [['file'], 'file', 'skipOnEmpty' => true, 'extensions' => 'jpg, png', 'maxSize' => $this->fileMaxSize],
