@@ -74,7 +74,7 @@ class Test extends \yii\db\ActiveRecord
     {
         return [
             [
-                ['subject_id' , 'type', 'lang_id'] , 'required',
+                ['subject_id' , 'type', 'language_id'] , 'required',
             ],
 
             [['file'], 'file', 'skipOnEmpty' => true, 'extensions' => 'jpg, png', 'maxSize' => $this->fileMaxSize],
@@ -85,7 +85,6 @@ class Test extends \yii\db\ActiveRecord
             [['exam_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => ExamsType::className(), 'targetAttribute' => ['exam_type_id' => 'id']],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['subject_id' => 'id']],
             [['language_id'], 'exist', 'skipOnError' => true, 'targetClass' => Languages::className(), 'targetAttribute' => ['language_id' => 'id']],
-            [['lang_id'], 'exist', 'skipOnError' => true, 'targetClass' => Language::className(), 'targetAttribute' => ['lang_id' => 'id']],
         ];
     }
 
@@ -116,7 +115,7 @@ class Test extends \yii\db\ActiveRecord
             'exam_type_id',
             'is_checked',
             'level',
-            'lang_id',
+            'language_id',
 
             'order',
             'status',
@@ -233,9 +232,10 @@ class Test extends \yii\db\ActiveRecord
             return simplify_errors($errors);
         }
 
-        if ($model->topic_id != null) {
-            $model->subject_id = $model->topic->subject_id;
-        }
+        $subjectSemestr = $model->subjectSemestr;
+        $model->subject_id = $subjectSemestr->subject_id;
+        $model->subject_semestr_id = $subjectSemestr->id;
+        $model->kafedra_id = $subjectSemestr->kafedra_id;
 
         $model->file = UploadedFile::getInstancesByName('upload');
         if ($model->file) {
@@ -306,9 +306,10 @@ class Test extends \yii\db\ActiveRecord
             return simplify_errors($errors);
         }
 
-        if ($model->topic_id != null) {
-            $model->subject_id = $model->topic->subject_id;
-        }
+        $subjectSemestr = $model->subjectSemestr;
+        $model->subject_id = $subjectSemestr->subject_id;
+        $model->subject_semestr_id = $subjectSemestr->id;
+        $model->kafedra_id = $subjectSemestr->kafedra_id;
 
         $model->file = UploadedFile::getInstancesByName('upload');
         if ($model->file) {
@@ -404,9 +405,12 @@ class Test extends \yii\db\ActiveRecord
                 $optionData = custom_shuffle($option);
                 $new = new Test();
                 $new->load($post , '');
-                if ($new->topic_id != null) {
-                    $new->subject_id = $new->topic->subject_id;
-                }
+
+                $subjectSemestr = $new->subjectSemestr;
+                $new->subject_id = $subjectSemestr->subject_id;
+                $new->subject_semestr_id = $subjectSemestr->id;
+                $new->kafedra_id = $subjectSemestr->kafedra_id;
+
                 $new->is_checked = 1;
                 $new->type = $type;
                 if (!$new->validate()) {
