@@ -80,7 +80,7 @@ class Test extends \yii\db\ActiveRecord
             [['file'], 'file', 'skipOnEmpty' => true, 'extensions' => 'jpg, png', 'maxSize' => $this->fileMaxSize],
             [['upload'], 'file', 'skipOnEmpty' => true, 'extensions' => 'xlsx , xls', 'maxSize' => $this->excelFileMaxSize],
 
-            [['is_checked' , 'lang_id' , 'type', 'language_id', 'exam_type_id' , 'subject_id', 'topic_id','level','order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
+            [['is_checked' , 'language_id' , 'type', 'language_id', 'exam_type_id' , 'subject_id', 'topic_id','level','order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
             [['topic_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectTopic::className(), 'targetAttribute' => ['topic_id' => 'id']],
             [['exam_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => ExamsType::className(), 'targetAttribute' => ['exam_type_id' => 'id']],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['subject_id' => 'id']],
@@ -186,7 +186,7 @@ class Test extends \yii\db\ActiveRecord
 
     public function getLanguage()
     {
-        return $this->hasOne(Language::className(), ['id' => 'lang_id']);
+        return $this->hasOne(Language::className(), ['id' => 'language_id']);
     }
 
     public function getExamType()
