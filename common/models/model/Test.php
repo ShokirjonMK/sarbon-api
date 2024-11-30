@@ -485,16 +485,17 @@ class Test extends \yii\db\ActiveRecord
 
     public function uploadFile()
     {
-        $folder_name = substr(STORAGE_PATH, 0, -1);
-        if (!file_exists(\Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER))) {
-            mkdir(\Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER), 0777, true);
+        if (!file_exists(STORAGE_PATH  . self::UPLOADS_FOLDER)) {
+            mkdir(STORAGE_PATH  . self::UPLOADS_FOLDER, 0777, true);
         }
+
         $fileName = \Yii::$app->security->generateRandomString(10) . '.' . $this->upload->extension;
         $miniUrl = self::UPLOADS_FOLDER . $fileName;
-        $url = \Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER. $fileName);
+        $url = STORAGE_PATH . $miniUrl;
         $this->upload->saveAs($url, false);
         return "storage/" . $miniUrl;
     }
+
 
 
     public function upload()
