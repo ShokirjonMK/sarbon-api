@@ -486,12 +486,12 @@ class Test extends \yii\db\ActiveRecord
     public function uploadFile()
     {
         $folder_name = substr(STORAGE_PATH, 0, -1);
-        if (!file_exists(\Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER))) {
-            mkdir(\Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER), 0777, true);
+        if (!file_exists(\Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER))) {
+            mkdir(\Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER), 0777, true);
         }
         $fileName = \Yii::$app->security->generateRandomString(10) . '.' . $this->upload->extension;
         $miniUrl = self::UPLOADS_FOLDER . $fileName;
-        $url = \Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER. $fileName);
+        $url = \Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER. $fileName);
         $this->upload->saveAs($url, false);
         return "storage/" . $miniUrl;
     }
@@ -501,13 +501,13 @@ class Test extends \yii\db\ActiveRecord
     {
         if ($this->validate()) {
             $folder_name = substr(STORAGE_PATH, 0, -1);
-            if (!file_exists(\Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER))) {
-                mkdir(\Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER), 0777, true);
+            if (!file_exists(\Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER))) {
+                mkdir(\Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER), 0777, true);
             }
 
             $fileName = $this->id . \Yii::$app->security->generateRandomString(12) . '.' . $this->file->extension;
             $miniUrl = self::UPLOADS_FOLDER . $fileName;
-            $url = \Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER. $fileName);
+            $url = \Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER. $fileName);
             $this->file->saveAs($url, false);
             return "storage/" . $miniUrl;
         } else {
