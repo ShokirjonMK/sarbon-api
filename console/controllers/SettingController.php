@@ -58,6 +58,7 @@ class SettingController extends Controller
 {
     public function actionStudentsImport()
     {
+        $errors = [];
         $inputFileName = __DIR__ . '/excels/talabalar.xlsx';
         $spreadsheet = IOFactory::load($inputFileName);
         $data = $spreadsheet->getActiveSheet()->toArray();
