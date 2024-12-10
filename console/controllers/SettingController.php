@@ -59,9 +59,7 @@ class SettingController extends Controller
     public function actionStudentsImport()
     {
         $errors = [];
-        $inputFileName = __DIR__ . '/excels/talabalar.xlsx';
-
-        dd($inputFileName);
+        $inputFileName = __DIR__ . '/excels/talabalar1.xlsx';
         $spreadsheet = IOFactory::load($inputFileName);
         $data = $spreadsheet->getActiveSheet()->toArray();
 
