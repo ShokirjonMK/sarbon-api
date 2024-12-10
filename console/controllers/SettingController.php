@@ -28,6 +28,7 @@ class SettingController extends Controller
             $user->delete();
         }
     }
+
     public function actionStudentsImport()
     {
         $errors = [];
@@ -103,4 +104,137 @@ class SettingController extends Controller
         }
         return $result;
     }
+
+    public function actionGetData()
+    {
+        $url = 'https://subsidiya.idm.uz/api/applicant/get-photo';
+
+        $students = Profile::find()->where(['<>' , 'passport_pin' , null])->all();
+        foreach ($students as $student) {
+
+            $profile = $student->profile;
+            $data = json_encode([
+                'pinfl' => $profile->passport_pin
+            ]);
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Authorization: Basic ' . base64_encode('ikbol:ikbol123321')
+            ]);
+
+            $response = curl_exec($ch);
+            $response = json_decode($response, true);
+            curl_close($ch);
+
+            $photoBase64 = $response['data']['photo'] ?? null;
+
+            $image = null;
+
+            if ($photoBase64) {
+                // Rasmni dekodlash
+                $photoData = base64_decode($photoBase64);
+
+                if (!file_exists(\Yii::getAlias('@api/web/storage/std_image'))) {
+                    mkdir(\Yii::getAlias('@api/web/storage/std_image'), 0777, true);
+                }
+
+                // Saqlash uchun fayl nomini va yo‘lini aniqlash
+                $fileName = $profile->passport_pin.'__ik.jpg'; // Fayl nomini kerakli tarzda o'zgartirishingiz mumkin
+                $filePath = \Yii::getAlias('@api/web/storage/std_image/') . $fileName;
+                $image = 'storage/std_image/'.$fileName;
+
+                // Faylni papkaga saqlash
+                file_put_contents($filePath, $photoData);
+
+                echo $b++."\n";
+            }
+        }
+
+        $pin = $response['data']['pinfl'];
+        $seria = $response['data']['docSeria'];
+        $number = $response['data']['docNumber'];
+        $last_name = $response['data']['surnameLatin'];
+        $first_name = $response['data']['nameLatin'];
+        $middle_name = $response['data']['patronymLatin'];
+        $birthday = $response['data']['birthDate'];
+        $b_date = $response['data']['docDateBegin'];
+        $e_date = $response['data']['docDateEnd'];
+        $given_by = $response['data']['docGivePlace'];
+        $jins = $response['data']['sex'];
+
+        $profile->first_name = $first_name;
+        $profile->last_name = $last_name;
+        $profile->middle_name = $middle_name;
+        $profile->birthday = $birthday;
+        $profile->passport_given_date = $b_date;
+        $profile->passport_issued_date = $e_date;
+        $profile->passport_given_by = $given_by;
+        $profile->gender = $jins;
+        $profile->passport_serial = $seria;
+        $profile->passport_number = $number;
+        $profile->passport_pin = $pin;
+        $profile->image = $image;
+        $profile->update(false);
+    }
+
+
+    public function actionIk()
+    {
+        $url = 'https://subsidiya.idm.uz/api/applicant/get-photo';
+
+        $data = json_encode([
+            'pinfl' => 52111045840018
+        ]);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: Basic ' . base64_encode('ikbol:ikbol123321')
+        ]);
+
+        $response = curl_exec($ch);
+        $response = json_decode($response, true);
+        curl_close($ch);
+
+        $photoBase64 = $response['data']['photo'] ?? null;
+
+        if ($photoBase64) {
+            // Rasmni dekodlash
+            $photoData = base64_decode($photoBase64);
+
+            if (!file_exists(\Yii::getAlias('@api/web/storage/std_image'))) {
+                mkdir(\Yii::getAlias('@api/web/storage/std_image'), 0777, true);
+            }
+
+            // Saqlash uchun fayl nomini va yo‘lini aniqlash
+            $fileName =  '60210056530017' . '__ik.jpg'; // Fayl nomini kerakli tarzda o'zgartirishingiz mumkin
+            $filePath = \Yii::getAlias('@api/web/storage/std_image/') . $fileName;
+
+            // Faylni papkaga saqlash
+            file_put_contents($filePath, $photoData);
+
+        }
+
+        $pin = $photoBase64 = $response['data']['pinfl'];
+        $seria = $photoBase64 = $response['data']['docSeria'];
+        $number = $photoBase64 = $response['data']['docNumber'];
+        $last_name = $photoBase64 = $response['data']['surnameLatin'];
+        $first_name = $photoBase64 = $response['data']['nameLatin'];
+        $middle_name = $photoBase64 = $response['data']['patronymLatin'];
+        $birthday = $photoBase64 = $response['data']['birthDate'];
+        $b_date = $photoBase64 = $response['data']['docDateBegin'];
+        $e_date = $photoBase64 = $response['data']['docDateEnd'];
+        $given_by = $photoBase64 = $response['data']['docGivePlace'];
+        $jins = $photoBase64 = $response['data']['sex'];
+    }
+
 }
