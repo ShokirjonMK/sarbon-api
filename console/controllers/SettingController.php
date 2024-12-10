@@ -111,6 +111,7 @@ class SettingController extends Controller
 
         $b = 0;
         $profiles = Profile::find()->where(['<>' , 'passport_pin' , null])->all();
+        dd($profiles);
         foreach ($profiles as $profile) {
 
             $data = json_encode([
