@@ -60,6 +60,8 @@ class SettingController extends Controller
     {
         $errors = [];
         $inputFileName = __DIR__ . '/excels/talabalar.xlsx';
+
+        dd($inputFileName);
         $spreadsheet = IOFactory::load($inputFileName);
         $data = $spreadsheet->getActiveSheet()->toArray();
 
