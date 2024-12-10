@@ -4,6 +4,7 @@ namespace console\controllers;
 
 use common\models\model\Group;
 
+use common\models\model\PasswordEncrypts;
 use common\models\model\Profile;
 use common\models\model\Student;
 use common\models\User;
@@ -14,6 +15,19 @@ use yii\console\Controller;
 
 class SettingController extends Controller
 {
+    public function actionDel()
+    {
+        $students = Student::find()
+            ->all();
+
+        foreach ($students as $student) {
+            Profile::deleteAll(['user_id' => $student->user_id]);
+            PasswordEncrypts::deleteAll(['user_id' => $student->user_id]);
+            $user = $student->user;
+            $student->delete();
+            $user->delete();
+        }
+    }
     public function actionStudentsImport()
     {
         $errors = [];
@@ -46,6 +60,7 @@ class SettingController extends Controller
 
                     $profile = new Profile();
                     $profile->user_id = $model->id;
+                    $profile->passport_pin = $dataOne[0];
                     $profile->save(false);
 
                     $student = new Student();
