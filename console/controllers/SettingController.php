@@ -110,75 +110,76 @@ class SettingController extends Controller
         $url = 'https://subsidiya.idm.uz/api/applicant/get-photo';
 
         $b = 0;
-        $profiles = Profile::find()->where(['<>' , 'passport_pin' , null])->all();
-        dd($profiles);
+        $profiles = Profile::find()->all();
         foreach ($profiles as $profile) {
 
-            $data = json_encode([
-                'pinfl' => $profile->passport_pin
-            ]);
+            if ($profile->passport_pin != null) {
+                $data = json_encode([
+                    'pinfl' => $profile->passport_pin
+                ]);
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'Authorization: Basic ' . base64_encode('ikbol:ikbol123321')
-            ]);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Authorization: Basic ' . base64_encode('ikbol:ikbol123321')
+                ]);
 
-            $response = curl_exec($ch);
-            $response = json_decode($response, true);
-            curl_close($ch);
-            $photoBase64 = $response['data']['photo'] ?? null;
-            $image = null;
+                $response = curl_exec($ch);
+                $response = json_decode($response, true);
+                curl_close($ch);
+                $photoBase64 = $response['data']['photo'] ?? null;
+                $image = null;
 
-            if ($photoBase64) {
-                // Rasmni dekodlash
-                $photoData = base64_decode($photoBase64);
+                if ($photoBase64) {
+                    // Rasmni dekodlash
+                    $photoData = base64_decode($photoBase64);
 
-                if (!file_exists(\Yii::getAlias('@api/web/storage/std_image'))) {
-                    mkdir(\Yii::getAlias('@api/web/storage/std_image'), 0777, true);
+                    if (!file_exists(\Yii::getAlias('@api/web/storage/std_image'))) {
+                        mkdir(\Yii::getAlias('@api/web/storage/std_image'), 0777, true);
+                    }
+
+                    // Saqlash uchun fayl nomini va yo‘lini aniqlash
+                    $fileName = $profile->passport_pin.'_ik.jpg'; // Fayl nomini kerakli tarzda o'zgartirishingiz mumkin
+                    $filePath = \Yii::getAlias('@api/web/storage/std_image/') . $fileName;
+                    $image = 'storage/std_image/'.$fileName;
+
+                    // Faylni papkaga saqlash
+                    file_put_contents($filePath, $photoData);
+
+                    echo $b++."\n";
                 }
 
-                // Saqlash uchun fayl nomini va yo‘lini aniqlash
-                $fileName = $profile->passport_pin.'_ik.jpg'; // Fayl nomini kerakli tarzda o'zgartirishingiz mumkin
-                $filePath = \Yii::getAlias('@api/web/storage/std_image/') . $fileName;
-                $image = 'storage/std_image/'.$fileName;
+                $pin = $response['data']['pinfl'];
+                $seria = $response['data']['docSeria'];
+                $number = $response['data']['docNumber'];
+                $last_name = $response['data']['surnameLatin'];
+                $first_name = $response['data']['nameLatin'];
+                $middle_name = $response['data']['patronymLatin'];
+                $birthday = $response['data']['birthDate'];
+                $b_date = $response['data']['docDateBegin'];
+                $e_date = $response['data']['docDateEnd'];
+                $given_by = $response['data']['docGivePlace'];
+                $jins = $response['data']['sex'];
 
-                // Faylni papkaga saqlash
-                file_put_contents($filePath, $photoData);
-
-                echo $b++."\n";
+                $profile->first_name = $first_name;
+                $profile->last_name = $last_name;
+                $profile->middle_name = $middle_name;
+                $profile->birthday = $birthday;
+                $profile->passport_given_date = $b_date;
+                $profile->passport_issued_date = $e_date;
+                $profile->passport_given_by = $given_by;
+                $profile->gender = $jins;
+                $profile->passport_serial = $seria;
+                $profile->passport_number = $number;
+                $profile->passport_pin = $pin;
+                $profile->image = $image;
+                $profile->update(false);
             }
         }
-
-        $pin = $response['data']['pinfl'];
-        $seria = $response['data']['docSeria'];
-        $number = $response['data']['docNumber'];
-        $last_name = $response['data']['surnameLatin'];
-        $first_name = $response['data']['nameLatin'];
-        $middle_name = $response['data']['patronymLatin'];
-        $birthday = $response['data']['birthDate'];
-        $b_date = $response['data']['docDateBegin'];
-        $e_date = $response['data']['docDateEnd'];
-        $given_by = $response['data']['docGivePlace'];
-        $jins = $response['data']['sex'];
-
-        $profile->first_name = $first_name;
-        $profile->last_name = $last_name;
-        $profile->middle_name = $middle_name;
-        $profile->birthday = $birthday;
-        $profile->passport_given_date = $b_date;
-        $profile->passport_issued_date = $e_date;
-        $profile->passport_given_by = $given_by;
-        $profile->gender = $jins;
-        $profile->passport_serial = $seria;
-        $profile->passport_number = $number;
-        $profile->passport_pin = $pin;
-        $profile->image = $image;
-        $profile->update(false);
     }
 
 
