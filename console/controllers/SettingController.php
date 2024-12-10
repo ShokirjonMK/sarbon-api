@@ -111,6 +111,7 @@ class SettingController extends Controller
 
         $b = 0;
         $students = Profile::find()->where(['<>' , 'passport_pin' , null])->all();
+        dd($students);
         foreach ($students as $student) {
 
             $profile = $student->profile;
