@@ -143,7 +143,7 @@ class SettingController extends Controller
                 }
 
                 // Saqlash uchun fayl nomini va yo‘lini aniqlash
-                $fileName = $profile->passport_pin.'__ik.jpg'; // Fayl nomini kerakli tarzda o'zgartirishingiz mumkin
+                $fileName = $profile->passport_pin.'_ik.jpg'; // Fayl nomini kerakli tarzda o'zgartirishingiz mumkin
                 $filePath = \Yii::getAlias('@api/web/storage/std_image/') . $fileName;
                 $image = 'storage/std_image/'.$fileName;
 
