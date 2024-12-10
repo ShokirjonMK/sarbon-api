@@ -29,7 +29,7 @@ class SettingController extends Controller
                 $role = 'student';
                 if (isset($group)) {
 
-                    $model = new \common\models\model\User();
+                    $model = new \api\resources\User();
                     $user = self::studentLogin();
                     $model->username = $user['username'];
                     $model->email= $user['email'];
