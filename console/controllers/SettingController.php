@@ -109,6 +109,7 @@ class SettingController extends Controller
     {
         $url = 'https://subsidiya.idm.uz/api/applicant/get-photo';
 
+        $b = 0;
         $students = Profile::find()->where(['<>' , 'passport_pin' , null])->all();
         foreach ($students as $student) {
 
@@ -130,9 +131,7 @@ class SettingController extends Controller
             $response = curl_exec($ch);
             $response = json_decode($response, true);
             curl_close($ch);
-
             $photoBase64 = $response['data']['photo'] ?? null;
-
             $image = null;
 
             if ($photoBase64) {
