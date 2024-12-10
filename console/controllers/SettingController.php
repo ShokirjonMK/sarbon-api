@@ -2,57 +2,12 @@
 
 namespace console\controllers;
 
-use api\resources\BaseGet;
-use api\resources\SemestrUpdate;
-use common\models\model\AttendReason;
-use common\models\model\EduPlan;
-use common\models\model\EduSemestr;
-use common\models\model\EduSemestrExamsType;
-use common\models\model\EduSemestrSubject;
-use common\models\model\Faculty;
-use common\models\model\FinalExam;
-use common\models\model\FinalExamConfirm;
-use common\models\model\FinalExamGroup;
-use common\models\model\FinalExamTest;
-use common\models\model\FinalExamTestQuestion;
-use common\models\model\FinalExamTestStart;
 use common\models\model\Group;
-use common\models\model\Kafedra;
-use common\models\model\LoginHistory;
-use common\models\model\MarkHistory;
-use common\models\model\Option;
-use common\models\model\PasswordEncrypts;
-use common\models\model\Student;
-use common\models\model\StudentAttend;
-use common\models\model\StudentGroup;
-use common\models\model\StudentMark;
-use common\models\model\StudentMarkHistory;
-use common\models\model\StudentSemestrSubject;
-use common\models\model\StudentSemestrSubjectVedomst;
-use common\models\model\StudentTopicPermission;
-use common\models\model\SubjectVedomst;
-use common\models\model\TeacherAccess;
-use common\models\model\Test;
-use common\models\model\TestBody;
-use common\models\model\Timetable;
-use common\models\model\TimetableAttend;
-use common\models\model\TimetableDate;
-use common\models\model\TimetableReason;
-use common\models\model\TimetableStudent;
-use common\models\model\Translate;
-use common\models\model\UserAccess;
-use common\models\model\UserAccessType;
-use common\models\Profile;
-use common\models\User;
+
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use Yii;
+
 use yii\console\Controller;
-use yii\db\Expression;
-use yii\helpers\Console;
-use yii\helpers\Inflector;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use yii\web\Response;
+
 
 class SettingController extends Controller
 {
@@ -64,11 +19,10 @@ class SettingController extends Controller
         $data = $spreadsheet->getActiveSheet()->toArray();
 
         $i = 0;
-        foreach ($data as $key => $row) {
+        foreach ($data as $dataOne) {
+            if (isset($dataOne[1])) {
 
-            if ($key != "") {
-                $guruh = $row[1];
-                $group = Group::findOne(['unical_name' => $guruh]);
+                $group = Group::findOne(['unical_name' =>  $dataOne[1]]);
                 $role = 'student';
                 if (isset($group)) {
 
@@ -103,7 +57,7 @@ class SettingController extends Controller
 //                    $auth->assign($authorRole, $model->id);
 
                 } else {
-                    $errors[] = $guruh;
+                    $errors[] = $dataOne[1];
                 }
                 $i++;
                 echo $i."\n";
