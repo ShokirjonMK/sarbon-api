@@ -154,6 +154,8 @@ class SettingController extends Controller
             }
         }
 
+        dd($response['data']);
+
         $pin = $response['data']['pinfl'];
         $seria = $response['data']['docSeria'];
         $number = $response['data']['docNumber'];
