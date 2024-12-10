@@ -110,11 +110,9 @@ class SettingController extends Controller
         $url = 'https://subsidiya.idm.uz/api/applicant/get-photo';
 
         $b = 0;
-        $students = Profile::find()->where(['<>' , 'passport_pin' , null])->all();
-        dd($students);
-        foreach ($students as $student) {
+        $profiles = Profile::find()->where(['<>' , 'passport_pin' , null])->all();
+        foreach ($profiles as $profile) {
 
-            $profile = $student->profile;
             $data = json_encode([
                 'pinfl' => $profile->passport_pin
             ]);
@@ -154,8 +152,6 @@ class SettingController extends Controller
                 echo $b++."\n";
             }
         }
-
-        dd($response['data']);
 
         $pin = $response['data']['pinfl'];
         $seria = $response['data']['docSeria'];
