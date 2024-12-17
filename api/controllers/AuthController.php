@@ -102,6 +102,9 @@ class AuthController extends ApiController
         }
     }
 
-    
+    public function actionBot()
+    {
+        return getIpMK();
+    }
 
 }

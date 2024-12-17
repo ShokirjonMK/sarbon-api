@@ -674,9 +674,9 @@ class  StudentController extends ApiActiveController
             $count = 100001 + 1;
         }
 
-        $post['username'] = 'sarbon-std-' . $count;
+        $post['username'] = 'utas-std-' . $count;
         if (!(isset($post['email']))) {
-            $post['email'] = 'sarbon-std' . $count . '@sarbon.uz';
+            $post['email'] = 'utas-std' . $count . '@utas.uz';
         } else {
             $userEmail = User::findOne([
                 'email' => $post['email']

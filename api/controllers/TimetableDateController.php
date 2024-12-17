@@ -2,7 +2,9 @@
 
 namespace api\controllers;
 
+use common\models\model\Faculty;
 use common\models\model\Group;
+use common\models\model\Profile;
 use common\models\model\TeacherAccess;
 use common\models\model\Timetable;
 use common\models\model\TimeTable1;
@@ -136,7 +138,68 @@ class TimetableDateController extends ApiActiveController
         return $this->response(1, _e('Success'), $data);
     }
 
+    public function actionAll()
+    {
+        $model = new TimetableDate();
 
+        $query = $model->find()
+            ->with(['profile'])
+            ->andWhere([$this->table_name . '.is_deleted' => 0])
+            ->leftJoin("profile p", "p.user_id = $this->table_name.user_id");
+
+        if (isRole('dean')) {
+            $t = $this->isSelf(Faculty::USER_ACCESS_TYPE_ID , 2);
+            if ($t['status'] == 1) {
+                $query->andFilterWhere([
+                    'in', $this->table_name.'.faculty_id', $t['UserAccess']
+                ]);
+            } elseif ($t['status'] == 2) {
+                $query->andFilterWhere([
+                    $this->table_name.'.is_deleted' => -1
+                ]);
+            }
+        }
+
+        $filter = Yii::$app->request->get('filter');
+        //  Filter from Profile
+        $profile = new Profile();
+        if (isset($filter)) {
+            $filter = json_decode(str_replace("'", "", $filter));
+            if (isset($filter)) {
+                foreach ($filter as $attribute => $value) {
+                    $attributeMinus = explode('-', $attribute);
+                    if (isset($attributeMinus[1])) {
+                        if ($attributeMinus[1] == 'role_name') {
+                            if (is_array($value)) {
+                                $query = $query->andWhere(['not in', 'auth_assignment.item_name', $value]);
+                            }
+                        }
+                    }
+                    if ($attribute == 'role_name') {
+                        if (is_array($value)) {
+                            $query = $query->andWhere(['in', 'auth_assignment.item_name', $value]);
+                        } else {
+                            $query = $query->andFilterWhere(['like', 'auth_assignment.item_name', '%' . $value . '%', false]);
+                        }
+                    }
+                    if (in_array($attribute, $profile->attributes())) {
+                        $query = $query->andFilterWhere(['like', 'p.' . $attribute, '%' . $value . '%', false]);
+                    }
+                }
+            }
+        }
+
+
+        // filter
+        $query = $this->filterAll($query, $model);
+
+        // sort
+        $query = $this->sort($query);
+
+        // data
+        $data =  $this->getData($query);
+        return $this->response(1, _e('Success'), $data);
+    }
 
     public function actionFilter($lang)
     {

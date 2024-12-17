@@ -59,9 +59,13 @@ class SubjectContentController extends ApiActiveController
         $query = $model->find()
             ->andWhere([$this->table_name . '.is_deleted' => 0]);
 
-        if (isRole('teacher')) {
+        if (isRole('teacher') && (!isRole('mudir') && !isRole('contenter'))) {
             $query->andWhere([$this->table_name . '.created_by' => current_user_id()]);
         }
+
+//        if (Yii::$app->request->get('user_id') != null) {
+//            $query->andWhere([$this->table_name . '.created_by' => Yii::$app->request->get('user_id')]);
+//        }
 
         // filter
         $query = $this->filterAll($query, $model);
@@ -100,6 +104,39 @@ class SubjectContentController extends ApiActiveController
 
         $post = Yii::$app->request->post();
 
+        if (isset($post['order'])) {
+            if ($post['order'] <= 0) {
+                return $this->response(0, _e('The minimum value of the order should not be less than zero'), null, null, ResponseStatus::UPROCESSABLE_ENTITY);
+            } else {
+                if ($post['order'] < $model->order) {
+                    $orderUpdate = SubjectContent::find()->where([
+                        'between', 'order', $post['order'], $model->order-1
+                    ])
+                        ->andWhere([ 'subject_topic_id' => $model->subject_topic_id , 'is_deleted' => 0 ])
+                        ->all();
+                    if (isset($orderUpdate)) {
+                        foreach ($orderUpdate as $orderItem) {
+                            $orderItem->order = $orderItem->order + 1;
+                            $orderItem->save(false);
+                        }
+                    }
+                }
+                if ($post['order'] > $model->order) {
+                    $orderUpdate = SubjectContent::find()->where([
+                        'between', 'order', $model->order+1, $post['order']
+                    ])
+                        ->andWhere([ 'subject_topic_id' => $model->subject_topic_id ,'is_deleted' => 0])
+                        ->all();
+                    if (isset($orderUpdate)) {
+                        foreach ($orderUpdate as $orderItem) {
+                            $orderItem->order = $orderItem->order - 1;
+                            $orderItem->save(false);
+                        }
+                    }
+                }
+            }
+        }
+
         $this->load($model, $post);
         $result = SubjectContent::updateItem($model, $post);
         if (!is_array($result)) {
@@ -111,11 +148,15 @@ class SubjectContentController extends ApiActiveController
 
     public function actionView($lang, $id)
     {
-        $model = SubjectContent::findOne($id);
+        $model = SubjectContent::find()
+            ->andWhere(['id' => $id])
+            //            ->andWhere(['is_deleted' => 0])
+            ->one();
 
         if (!$model) {
             return $this->response(0, _e('Data not found.'), null, null, ResponseStatus::NOT_FOUND);
         }
+
 
         return $this->response(1, _e('Success.'), $model, null, ResponseStatus::OK);
     }
@@ -133,7 +174,17 @@ class SubjectContentController extends ApiActiveController
         // remove model
         if ($model) {
             $model->is_deleted = 1;
-            $model->update(false);
+            if ($model->save()) {
+                $order = SubjectContent::find()->where([
+                    '>' , 'order', $model->order
+                ])
+                    ->andWhere(['subject_topic_id'=> $model->subject_topic_id])
+                    ->all();
+                foreach ($order as $order_item) {
+                    $order_item->order = $order_item->order - 1;
+                    $order_item->save();
+                }
+            }
 
             return $this->response(1, _e($this->controller_name . ' succesfully removed.'), null, null, ResponseStatus::OK);
         }
@@ -153,7 +204,18 @@ class SubjectContentController extends ApiActiveController
         // remove model
         if ($model) {
             $model->is_deleted = 1;
-            $model->save(false);
+            if ($model->save()) {
+                $order = SubjectContent::find()->where([
+                    '>' , 'order', $model->order
+                ])
+                    ->andWhere(['subject_topic_id' => $model->subject_topic_id])
+                    ->all();
+                foreach ($order as $order_item) {
+                    $order_item->order = $order_item->order - 1;
+                    $order_item->save(false);
+                }
+            }
+
             return $this->response(1, _e($this->controller_name . ' succesfully removed.'), null, null, ResponseStatus::OK);
         }
         return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::BAD_REQUEST);
@@ -161,7 +223,6 @@ class SubjectContentController extends ApiActiveController
 
     public function actionOrder($lang)
     {
-        return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::BAD_REQUEST);
         $post = Yii::$app->request->post();
 
         $result = SubjectContent::orderCorrector($post);

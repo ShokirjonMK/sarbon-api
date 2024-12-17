@@ -30,6 +30,8 @@ class m240206_053655_create_timetable_table extends Migration
             'ids' => $this->integer()->notNull(),
             'group_id' => $this->integer()->notNull(),
             'edu_semestr_subject_id' => $this->integer()->notNull(),
+//            'teacher_access_id' => $this->integer()->notNull(),
+//            'user_id' => $this->integer()->notNull(),
             'subject_id' => $this->integer()->null(),
             'subject_category_id' => $this->integer()->null(),
             'edu_plan_id' => $this->integer()->null(),
@@ -62,6 +64,8 @@ class m240206_053655_create_timetable_table extends Migration
 
         $this->addForeignKey('mk_timetable_table_group_table', 'timetable', 'group_id', 'group', 'id');
         $this->addForeignKey('mk_timetable_table_edu_semestr_subject_table', 'timetable', 'edu_semestr_subject_id', 'edu_semestr_subject', 'id');
+//        $this->addForeignKey('mk_timetable_table_teacher_access_table', 'timetable', 'teacher_access_id', 'teacher_access', 'id');
+//        $this->addForeignKey('mk_timetable_table_user_table', 'timetable', 'user_id', 'users', 'id');
         $this->addForeignKey('mk_timetable_table_subject_table', 'timetable', 'subject_id', 'subject', 'id');
         $this->addForeignKey('mk_timetable_table_subject_category_table', 'timetable', 'subject_category_id', 'subject_category', 'id');
         $this->addForeignKey('mk_timetable_table_edu_plan_table', 'timetable', 'edu_plan_id', 'edu_plan', 'id');

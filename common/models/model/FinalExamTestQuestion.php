@@ -197,7 +197,7 @@ class FinalExamTestQuestion extends \yii\db\ActiveRecord
         $time = time();
         $start = $model->finalExamTestStart;
         $finalExam = $start->finalExamTest->finalExam;
-        if ($finalExam->status == 3 && $start->status == 2 && $start->start_time <= $time && $time <= $start->finish_time) {
+        if ($finalExam->status <= 3 && $start->status == 2 && $start->start_time <= $time && $time <= $start->finish_time) {
             if (isset($post['option_id'])) {
                 $option = Option::findOne([
                     'test_id' => $model->test_id,

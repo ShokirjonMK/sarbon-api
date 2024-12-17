@@ -48,7 +48,7 @@ class WeekController extends ApiController
 
     public function actionCreate($lang)
     {
-        return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::UPROCESSABLE_ENTITY);
+//        return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::UPROCESSABLE_ENTITY);
         $model = new Week();
         $post = Yii::$app->request->post();
         $this->load($model, $post);

@@ -129,6 +129,28 @@ class m230506_110930_create_profile_table extends Migration
             'created_at' => time(),
             'updated_at' => time(),
         ]);
+
+        $this->insert('{{%profile}}', [
+            'user_id' => 5,
+            'first_name' => 'Ismoil',
+            'last_name' => 'Ismoil',
+            'middle_name' => 'Ismoil',
+            'created_at' => time(),
+            'updated_at' => time(),
+        ]);
+
+        $this->insert('{{%profile}}', [
+            'user_id' => 6,
+            'first_name' => 'Azizxon',
+            'last_name' => 'Azizxon',
+            'middle_name' => 'Azizxon',
+            'created_at' => time(),
+            'updated_at' => time(),
+        ]);
+
+
+
+
     }
 
     /**

@@ -3,7 +3,6 @@
 namespace common\models\model;
 
 use api\resources\ResourceTrait;
-use api\resources\StudentSubject;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 
@@ -53,7 +52,6 @@ class EduSemestr extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-
     public static function tableName()
     {
         return 'edu_semestr';
@@ -155,7 +153,6 @@ class EduSemestr extends \yii\db\ActiveRecord
             'semestr_id',
             'credit',
             'edu_year_id',
-            'edu_form_id',
             'start_date',
             'end_date',
             'type',
@@ -177,7 +174,6 @@ class EduSemestr extends \yii\db\ActiveRecord
             'weeks',
             'course',
             'eduPlan',
-            'eduForm',
             'eduYear',
             'semestr',
             'eduSemestrSubjects',
@@ -361,37 +357,6 @@ class EduSemestr extends \yii\db\ActiveRecord
         }
     }
 
-    public static function merge($post)
-    {
-        $transaction = Yii::$app->db->beginTransaction();
-        $errors = [];
-
-        if (!isset($post['edu_semestr_id'])) {
-            $errors[] = [_e('Edu Semestr Id not found')];
-            $transaction->rollBack();
-            return simplify_errors($errors);
-        }
-
-        $eduSemestr = EduSemestr::findOne($post['edu_semestr_id']);
-        if (!$eduSemestr) {
-            $errors[] = [_e('Edu Semestr not found')];
-            $transaction->rollBack();
-            return simplify_errors($errors);
-        }
-
-        $result = StudentSubject::merge($eduSemestr);
-        if (!$result['is_ok']) {
-            $transaction->rollBack();
-            return simplify_errors($result['errors']);
-        }
-
-        if (count($errors) == 0) {
-            $transaction->commit();
-            return true;
-        }
-        $transaction->rollBack();
-        return simplify_errors($errors);
-    }
 
     public function beforeSave($insert)
     {

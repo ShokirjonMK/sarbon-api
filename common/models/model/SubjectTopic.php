@@ -69,19 +69,19 @@ class SubjectTopic extends \yii\db\ActiveRecord
                 [
                     'name',
                     'hours',
-                    'subject_semestr_id',
+                    'subject_id',
                     'lang_id',
                     'subject_category_id',
+                    // 'teacher_access_id',
                 ],
                 'required'
             ],
             [
                 [
-                    'subject_semestr_id',
-                    'hours',
-                    'subject_id',
-                    'lang_id',
-                    'subject_category_id',
+                    'allotted_time',
+                    'attempts_count',
+                    'duration_reading_time',
+                    'test_count',
 
                     'order',
                     'status',
@@ -91,6 +91,18 @@ class SubjectTopic extends \yii\db\ActiveRecord
                     'updated_by',
                     'is_deleted'
                 ], 'integer'
+            ],
+            [['min_percentage'], 'safe'
+            ],
+            [
+                [
+                    'hours',
+                    'subject_id',
+                    'lang_id',
+                    'subject_category_id',
+                    'teacher_access_id',
+                ],
+                'integer'
             ],
             [
                 [
@@ -102,23 +114,57 @@ class SubjectTopic extends \yii\db\ActiveRecord
             [['file'], 'file', 'skipOnEmpty' => true, 'extensions' => 'xlsx , xls', 'maxSize' => $this->allFileMaxSize],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['subject_id' => 'id']],
             [['subject_category_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectCategory::className(), 'targetAttribute' => ['subject_category_id' => 'id']],
-            [['lang_id'], 'exist', 'skipOnError' => true, 'targetClass' => Language::className(), 'targetAttribute' => ['lang_id' => 'id']],
-            [['subject_semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectSemestr::className(), 'targetAttribute' => ['subject_semestr_id' => 'id']],
+            [['lang_id'], 'exist', 'skipOnError' => true, 'targetClass' => Languages::className(), 'targetAttribute' => ['lang_id' => 'id']],
+            [['teacher_access_id'], 'exist', 'skipOnError' => true, 'targetClass' => TeacherAccess::className(), 'targetAttribute' => ['teacher_access_id' => 'id']],
+
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
+
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'name' => 'Name',
+            'hours' => 'Hours',
+            'subject_id' => 'Subject Id',
+            'subject_category_id' => 'Subject Category Id',
+            'lang_id' => 'Lang Id',
+            'description' => 'Description',
+            'teacher_access_id' => 'teacher_access_id',
+
+            'order' => _e('Order'),
+            'status' => _e('Status'),
+            'created_at' => _e('Created At'),
+            'updated_at' => _e('Updated At'),
+            'created_by' => _e('Created By'),
+            'updated_by' => _e('Updated By'),
+            'is_deleted' => _e('Is Deleted'),
+        ];
+    }
 
     public function fields()
     {
         $fields = [
             'id',
-            'subject_id',
-            'subject_semestr_id',
-            'lang_id',
-            'hours',
-
             'name',
+            'hours',
+            'subject_id',
+            'subject_category_id',
+            'lang_id',
             'description',
+            'teacher_access_id',
+
+            'isPermission',
+
+            'allotted_time',
+            'attempts_count',
+            'duration_reading_time',
+            'test_count',
+            'min_percentage',
 
             'order',
             'status',
@@ -147,8 +193,6 @@ class SubjectTopic extends \yii\db\ActiveRecord
             'reference',
             'contentTest',
             'teachersContentCount',
-
-            'subjectSemestr',
 
             'createdBy',
             'updatedBy',
@@ -253,11 +297,6 @@ class SubjectTopic extends \yii\db\ActiveRecord
         return count($this->content) > 0 ? 1 : 0;
     }
 
-    public function getSubjectSemestr()
-    {
-        return $this->hasOne(SubjectSemestr::className(), ['id' => 'subject_semestr_id'])->onCondition(['is_deleted' => 0]);
-    }
-
     public function getMark()
     {
         if (Yii::$app->request->get('user_id') != null) {
@@ -283,7 +322,7 @@ class SubjectTopic extends \yii\db\ActiveRecord
 
     public function getLang()
     {
-        return $this->hasOne(Language::className(), ['id' => 'lang_id']);
+        return $this->hasOne(Languages::className(), ['id' => 'lang_id'])->select(['id', 'name']);
     }
 
     public function getContentTest()
@@ -300,17 +339,14 @@ class SubjectTopic extends \yii\db\ActiveRecord
             $errors[] = $model->errors;
         }
 
-        $model->subject_id = $model->subjectSemestr->subject_id;
-
         if (isset($post['order'])) {
             if ($post['order'] <= 0) {
                 $errors[] = _e('The minimum value of the order should not be less than zero');
             } else {
                 $order = $post['order'];
                 $data = [
-                    'subject_semestr_id' => $model->subject_semestr_id,
+                    'subject_id' => $model->subject_id,
                     'subject_category_id' => $model->subject_category_id,
-                    'lang_id' => $model->lang_id,
                     'is_deleted' => 0
                 ];
                 $orderDescOne = SubjectTopic::find()
@@ -343,9 +379,8 @@ class SubjectTopic extends \yii\db\ActiveRecord
         } else {
             $orderDescOne = SubjectTopic::find()
                 ->where([
-                    'subject_semestr_id' => $model->subject_semestr_id,
+                    'subject_id' => $model->subject_id,
                     'subject_category_id' => $model->subject_category_id,
-                    'lang_id' => $model->lang_id,
                     'is_deleted' => 0
                 ])
                 ->orderBy('order desc')
@@ -356,6 +391,13 @@ class SubjectTopic extends \yii\db\ActiveRecord
                 $model->order = 1;
             }
         }
+
+
+//        if (isRole('teacher') && !isRole('mudir')) {
+//            $teacherAccess = TeacherAccess::findOne(['subject_id' => $model->subject_id, 'user_id' => current_user_id()]);
+//            $model->teacher_access_id =  $teacherAccess ? $teacherAccess->id : 0;
+//            $model->user_id = current_user_id();
+//        }
 
         if (count($errors) == 0) {
             $model->save(false);
@@ -374,14 +416,8 @@ class SubjectTopic extends \yii\db\ActiveRecord
 
         $model = new SubjectTopic();
 
-        if (!isset($post['subject_semestr_id'])) {
-            $errors[] = ['subject_semestr_id' => _e('Subject Semestr Id not found')];
-            $transaction->rollBack();
-            return simplify_errors($errors);
-        }
-        $subjectSemestr = SubjectSemestr::findOne($post['subject_semestr_id']);
-        if (!$subjectSemestr) {
-            $errors[] = ['subject_semestr_id' => _e('Subject Semestr Id not found')];
+        if (!isset($post['subject_id'])) {
+            $errors[] = ['subject_id' => _e('Subject Id not found')];
             $transaction->rollBack();
             return simplify_errors($errors);
         }
@@ -418,8 +454,7 @@ class SubjectTopic extends \yii\db\ActiveRecord
                 }
 
                 $new = new SubjectTopic();
-                $new->subject_semestr_id = $subjectSemestr->id;
-                $new->subject_id = $subjectSemestr->subject_id;
+                $new->subject_id = $post['subject_id'];
                 $new->name = $name;
                 $new->lang_id = $lang;
                 $new->subject_category_id = $category;
@@ -431,7 +466,7 @@ class SubjectTopic extends \yii\db\ActiveRecord
                     $transaction->rollBack();
                     return simplify_errors($errors);
                 }
-                if (!$new->save(false)) {
+                if (!$new->save()) {
                     $errors[] = $new->errors;
                     $transaction->rollBack();
                     return simplify_errors($errors);
@@ -469,13 +504,10 @@ class SubjectTopic extends \yii\db\ActiveRecord
 
         if (!($model->validate())) {
             $errors[] = $model->errors;
-            $transaction->rollBack();
-            return simplify_errors($errors);
         }
 
-        self::orderUpdate($model , $model->order);
-
         if (count($errors) == 0) {
+            $model->save(false);
             $transaction->commit();
             return true;
         }
@@ -489,13 +521,30 @@ class SubjectTopic extends \yii\db\ActiveRecord
 
         if (!($model->validate())) {
             $errors[] = $model->errors;
-            $transaction->rollBack();
-            return simplify_errors($errors);
         }
 
-        self::orderUpdate($model , $post['order']);
+        $topics = SubjectTopic::find()
+            ->where([
+                'subject_id' => $model->subject_id,
+                'subject_category_id' => $model->subject_category_id,
+                'is_deleted' => 0
+            ])
+            ->andWhere(['!=' , 'id' , $model->id])
+            ->orderBy('order asc')
+            ->all();
+        $i = 1;
+        foreach ($topics as $topic) {
+            if ($i == $post['order']) {
+                $i++;
+            }
+            $topic->order = $i;
+            $topic->save(false);
+            $i++;
+        }
+        $model->order = $post['order'];
 
-        if (count($errors) == 0) {
+
+        if ($model->save(false)) {
             $transaction->commit();
             return true;
         } else {
@@ -503,39 +552,6 @@ class SubjectTopic extends \yii\db\ActiveRecord
             return simplify_errors($errors);
         }
 
-    }
-
-    public static function orderUpdate($model , $order)
-    {
-        $topics = SubjectTopic::find()
-            ->where([
-                'subject_semestr_id' => $model->subject_semestr_id,
-                'subject_category_id' => $model->subject_category_id,
-                'lang_id' => $model->lang_id,
-                'is_deleted' => 0
-            ])
-            ->andWhere(['!=' , 'id' , $model->id])
-            ->orderBy('order asc')
-            ->all();
-
-        $t = false;
-        $i = 1;
-        foreach ($topics as $topic) {
-            if ($i == $order) {
-                $t = true;
-                $i++;
-            }
-            $topic->order = $i;
-            $topic->update(false);
-            $i++;
-        }
-        if (!$t) {
-            $model->order = $i;
-        } else {
-            $model->order = $order;
-        }
-        $model->update(false);
-        return true;
     }
 
     public static function validPostTopicTest($post) {

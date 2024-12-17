@@ -28,6 +28,7 @@ class m240112_093859_create_final_exam_table extends Migration
         $this->createTable('{{%final_exam}}', [
             'id' => $this->primaryKey(),
             'vedomst' => $this->integer()->defaultValue(1),
+//            'group_id' => $this->integer()->notNull(),
             'edu_semestr_subject_id' => $this->integer()->notNull(),
             'user_id' => $this->integer()->null(),
 
@@ -61,6 +62,7 @@ class m240112_093859_create_final_exam_table extends Migration
             'is_deleted' => $this->tinyInteger()->notNull()->defaultValue(0),
         ], $tableOptions);
 
+//        $this->addForeignKey('mk_final_exam_table_group_table', 'final_exam', 'group_id', 'group', 'id');
         $this->addForeignKey('mk_final_exam_table_edu_semestr_subject_table', 'final_exam', 'edu_semestr_subject_id', 'edu_semestr_subject', 'id');
         $this->addForeignKey('mk_final_exam_table_user_table', 'final_exam', 'user_id', 'users', 'id');
         $this->addForeignKey('mk_final_exam_table_edu_semestr_exams_type_table', 'final_exam', 'edu_semestr_exams_type_id', 'edu_semestr_exams_type', 'id');

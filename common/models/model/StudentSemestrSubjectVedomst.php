@@ -54,14 +54,13 @@ class StudentSemestrSubjectVedomst extends \yii\db\ActiveRecord
     {
         return [
             [['subject_id','student_id','semestr_id'], 'required'],
-            [['student_semestr_subject_id', 'edu_semestr_subject_id', 'subject_id','student_id','semestr_id','edu_year_id','student_user_id','group_id','ball','passed','vedomst', 'order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
+            [['student_semestr_subject_id','subject_id','student_id','semestr_id','edu_year_id','student_user_id','group_id','ball','passed','vedomst', 'order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
             [['student_semestr_subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => StudentSemestrSubject::className(), 'targetAttribute' => ['student_semestr_subject_id' => 'id']],
             [['student_id'], 'exist', 'skipOnError' => true, 'targetClass' => Student::className(), 'targetAttribute' => ['student_id' => 'id']],
             [['student_user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['student_user_id' => 'id']],
             [['edu_year_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduYear::className(), 'targetAttribute' => ['edu_year_id' => 'id']],
             [['semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => Semestr::className(), 'targetAttribute' => ['semestr_id' => 'id']],
             [['group_id'], 'exist', 'skipOnError' => true, 'targetClass' => Group::className(), 'targetAttribute' => ['group_id' => 'id']],
-            [['edu_semestr_subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduSemestrSubject::className(), 'targetAttribute' => ['edu_semestr_subject_id' => 'id']],
         ];
     }
 
@@ -71,7 +70,6 @@ class StudentSemestrSubjectVedomst extends \yii\db\ActiveRecord
         $fields =  [
             'id',
             'student_semestr_subject_id',
-            'edu_semestr_subject_id',
             'subject_id',
             'student_id',
             'semestr_id',
@@ -96,7 +94,6 @@ class StudentSemestrSubjectVedomst extends \yii\db\ActiveRecord
     public function extraFields()
     {
         $extraFields =  [
-            'eduSemestrSubject',
             'subject',
             'student',
             'studentUser',
@@ -124,11 +121,6 @@ class StudentSemestrSubjectVedomst extends \yii\db\ActiveRecord
     public function getSubject()
     {
         return $this->hasOne(Subject::className(), ['id' => 'subject_id']);
-    }
-
-    public function getEduSemestrSubject()
-    {
-        return $this->hasOne(EduSemestrSubject::className(), ['id' => 'edu_semestr_subject_id']);
     }
 
     public function getStudentSemestrSubject()
@@ -237,6 +229,10 @@ class StudentSemestrSubjectVedomst extends \yii\db\ActiveRecord
         }
     }
 
+    public function getEduSemestrSubject()
+    {
+        return $this->hasOne(EduSemestrSubject::className(), ['id' => 'edu_semestr_subject_id']);
+    }
 
     public function getStudent()
     {

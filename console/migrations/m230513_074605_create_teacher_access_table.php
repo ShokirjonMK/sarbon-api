@@ -29,7 +29,6 @@ class m230513_074605_create_teacher_access_table extends Migration
             'id' => $this->primaryKey(),
             'user_id' => $this->integer()->notNull(),
             'subject_id' => $this->integer()->notNull(),
-            'subject_semestr_id' => $this->integer()->notNull(),
             'language_id' => $this->integer()->notNull(),
             'is_lecture' => $this->tinyInteger(1)->defaultValue(0),
             'order'=>$this->tinyInteger(1)->defaultValue(1),
@@ -42,8 +41,7 @@ class m230513_074605_create_teacher_access_table extends Migration
         ], $tableOptions);
         $this->addForeignKey('mk_teacher_access_table_users_table', 'teacher_access', 'user_id', 'users', 'id');
         $this->addForeignKey('mk_teacher_access_table_subject_table', 'teacher_access', 'subject_id', 'subject', 'id');
-        $this->addForeignKey('mk_teacher_access_table_subject_semestr_table', 'teacher_access', 'subject_semestr_id', 'subject_semestr', 'id');
-        $this->addForeignKey('mk_teacher_access_table_language_table', 'teacher_access', 'language_id', 'language', 'id');
+        $this->addForeignKey('mk_teacher_access_table_languages_table', 'teacher_access', 'language_id', 'languages', 'id');
     }
 
     /**

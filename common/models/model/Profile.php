@@ -357,11 +357,11 @@ class Profile extends \yii\db\ActiveRecord
 
             'passport_given_by'=> function () {
                 if (isRole('admin') || isRole('edu_admin') || isRole('dean') || isRole('dep_lead') || isRole('hr')) {
-                    return $this->passport_given_by;
+                    return $this->passport_issued_date;
                 } elseif ($this->user_id == current_user_id()) {
-                    return $this->passport_given_by;
+                    return $this->passport_issued_date;
                 } else {
-                    return "**********";
+                    return "****-**-**";
                 }
             },
 

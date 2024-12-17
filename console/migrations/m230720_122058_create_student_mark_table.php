@@ -45,9 +45,10 @@ class m230720_122058_create_student_mark_table extends Migration
             'course_id' => $this->integer()->null(),
 
             'type' => $this->integer()->defaultValue(0),
-
-            'passed' => $this->integer()->null(),
-            'attend' => $this->integer()->null(),
+//            'exam_id' => $this->integer()->null(),
+//            'exam_student_id' => $this->integer()->null(),
+//            'exam_control_id' => $this->integer()->null(),
+//            'exam_control_student_id' => $this->integer()->null(),
 
             'order'=>$this->tinyInteger(1)->defaultValue(1),
             'status' => $this->tinyInteger(1)->defaultValue(1),
@@ -71,6 +72,11 @@ class m230720_122058_create_student_mark_table extends Migration
         $this->addForeignKey('mk_student_mark_table_direction_table', 'student_mark', 'direction_id', 'direction', 'id');
         $this->addForeignKey('mk_student_mark_table_semestr_table', 'student_mark', 'semestr_id', 'semestr', 'id');
         $this->addForeignKey('mk_student_mark_table_course_table', 'student_mark', 'course_id', 'course', 'id');
+//        $this->addForeignKey('mk_student_mark_table_exam_table', 'student_mark', 'exam_id', 'exam', 'id');
+//        $this->addForeignKey('mk_student_mark_table_exam_student_table', 'student_mark', 'exam_student_id', 'exam_student', 'id');
+//        $this->addForeignKey('mk_student_mark_table_exam_control_table', 'student_mark', 'exam_control_id', 'exam_control', 'id');
+//        $this->addForeignKey('mk_student_mark_table_exam_control_student_table', 'student_mark', 'exam_control_student_id', 'exam_control_student', 'id');
+
     }
 
     /**

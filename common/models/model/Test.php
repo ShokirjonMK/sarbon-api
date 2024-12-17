@@ -74,17 +74,18 @@ class Test extends \yii\db\ActiveRecord
     {
         return [
             [
-                ['subject_semestr_id' , 'type', 'language_id'] , 'required',
+                ['subject_id' , 'type', 'lang_id'] , 'required',
             ],
 
             [['file'], 'file', 'skipOnEmpty' => true, 'extensions' => 'jpg, png', 'maxSize' => $this->fileMaxSize],
             [['upload'], 'file', 'skipOnEmpty' => true, 'extensions' => 'xlsx , xls', 'maxSize' => $this->excelFileMaxSize],
 
-            [['is_checked' , 'language_id' , 'type', 'language_id', 'exam_type_id' , 'subject_id', 'subject_topic_id','level','order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
-            [['subject_topic_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectTopic::className(), 'targetAttribute' => ['subject_topic_id' => 'id']],
+            [['is_checked' , 'lang_id' , 'type', 'language_id', 'exam_type_id' , 'subject_id', 'topic_id','level','order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
+            [['topic_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectTopic::className(), 'targetAttribute' => ['topic_id' => 'id']],
             [['exam_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => ExamsType::className(), 'targetAttribute' => ['exam_type_id' => 'id']],
             [['subject_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['subject_id' => 'id']],
             [['language_id'], 'exist', 'skipOnError' => true, 'targetClass' => Languages::className(), 'targetAttribute' => ['language_id' => 'id']],
+            [['lang_id'], 'exist', 'skipOnError' => true, 'targetClass' => Language::className(), 'targetAttribute' => ['lang_id' => 'id']],
         ];
     }
 
@@ -111,11 +112,11 @@ class Test extends \yii\db\ActiveRecord
             'id',
             'type',
             'subject_id',
-            'subject_topic_id',
+            'topic_id',
             'exam_type_id',
             'is_checked',
             'level',
-            'language_id',
+            'lang_id',
 
             'order',
             'status',
@@ -134,7 +135,6 @@ class Test extends \yii\db\ActiveRecord
             'topic',
             'options',
             'subject',
-            'subjectSemestr',
             'language',
             'examType',
             'testBody',
@@ -175,14 +175,9 @@ class Test extends \yii\db\ActiveRecord
         return $this->hasOne(TestBody::className(), ['test_id' => 'id'])->where(['is_deleted' => 0]);
     }
 
-    public function getSubjectSemestr()
-    {
-        return $this->hasOne(SubjectSemestr::className(), ['id' => 'subject_semestr_id']);
-    }
-
     public function getTopic()
     {
-        return $this->hasOne(SubjectTopic::className(), ['id' => 'subject_topic_id']);
+        return $this->hasOne(SubjectTopic::className(), ['id' => 'topic_id']);
     }
 
     public function getSubject()
@@ -192,7 +187,7 @@ class Test extends \yii\db\ActiveRecord
 
     public function getLanguage()
     {
-        return $this->hasOne(Language::className(), ['id' => 'language_id']);
+        return $this->hasOne(Language::className(), ['id' => 'lang_id']);
     }
 
     public function getExamType()
@@ -238,10 +233,9 @@ class Test extends \yii\db\ActiveRecord
             return simplify_errors($errors);
         }
 
-        $subjectSemestr = $model->subjectSemestr;
-        $model->subject_id = $subjectSemestr->subject_id;
-        $model->subject_semestr_id = $subjectSemestr->id;
-        $model->kafedra_id = $subjectSemestr->kafedra_id;
+        if ($model->topic_id != null) {
+            $model->subject_id = $model->topic->subject_id;
+        }
 
         $model->file = UploadedFile::getInstancesByName('upload');
         if ($model->file) {
@@ -312,10 +306,9 @@ class Test extends \yii\db\ActiveRecord
             return simplify_errors($errors);
         }
 
-        $subjectSemestr = $model->subjectSemestr;
-        $model->subject_id = $subjectSemestr->subject_id;
-        $model->subject_semestr_id = $subjectSemestr->id;
-        $model->kafedra_id = $subjectSemestr->kafedra_id;
+        if ($model->topic_id != null) {
+            $model->subject_id = $model->topic->subject_id;
+        }
 
         $model->file = UploadedFile::getInstancesByName('upload');
         if ($model->file) {
@@ -411,12 +404,9 @@ class Test extends \yii\db\ActiveRecord
                 $optionData = custom_shuffle($option);
                 $new = new Test();
                 $new->load($post , '');
-
-                $subjectSemestr = $new->subjectSemestr;
-                $new->subject_id = $subjectSemestr->subject_id;
-                $new->subject_semestr_id = $subjectSemestr->id;
-                $new->kafedra_id = $subjectSemestr->kafedra_id;
-
+                if ($new->topic_id != null) {
+                    $new->subject_id = $new->topic->subject_id;
+                }
                 $new->is_checked = 1;
                 $new->type = $type;
                 if (!$new->validate()) {
@@ -485,30 +475,29 @@ class Test extends \yii\db\ActiveRecord
 
     public function uploadFile()
     {
-        if (!file_exists(STORAGE_PATH  . self::UPLOADS_FOLDER)) {
-            mkdir(STORAGE_PATH  . self::UPLOADS_FOLDER, 0777, true);
+        $folder_name = substr(STORAGE_PATH, 0, -1);
+        if (!file_exists(\Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER))) {
+            mkdir(\Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER), 0777, true);
         }
-
         $fileName = \Yii::$app->security->generateRandomString(10) . '.' . $this->upload->extension;
         $miniUrl = self::UPLOADS_FOLDER . $fileName;
-        $url = STORAGE_PATH . $miniUrl;
+        $url = \Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER. $fileName);
         $this->upload->saveAs($url, false);
         return "storage/" . $miniUrl;
     }
-
 
 
     public function upload()
     {
         if ($this->validate()) {
             $folder_name = substr(STORAGE_PATH, 0, -1);
-            if (!file_exists(\Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER))) {
-                mkdir(\Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER), 0777, true);
+            if (!file_exists(\Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER))) {
+                mkdir(\Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER), 0777, true);
             }
 
             $fileName = $this->id . \Yii::$app->security->generateRandomString(12) . '.' . $this->file->extension;
             $miniUrl = self::UPLOADS_FOLDER . $fileName;
-            $url = \Yii::getAlias( $folder_name  ."/". self::UPLOADS_FOLDER. $fileName);
+            $url = \Yii::getAlias('@api/web'. $folder_name  ."/". self::UPLOADS_FOLDER. $fileName);
             $this->file->saveAs($url, false);
             return "storage/" . $miniUrl;
         } else {

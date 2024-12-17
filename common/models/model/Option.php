@@ -170,7 +170,7 @@ class Option extends \yii\db\ActiveRecord
         }
 
         if (count($errors) == 0) {
-            $model->save(false);
+            $model->save();
             $transaction->commit();
             return true;
         } else {
@@ -204,7 +204,7 @@ class Option extends \yii\db\ActiveRecord
             }
         }
 
-        if ($model->save(false)) {
+        if ($model->save()) {
             if (file_exists($oldFileUrl)) {
                 unlink($oldFileUrl);
             }

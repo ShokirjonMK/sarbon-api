@@ -27,13 +27,12 @@ class m230621_115024_create_subject_content_table extends Migration
 
         $this->createTable('{{%subject_content}}', [
             'id' => $this->primaryKey(),
-            'subject_topic_id' => $this->integer()->notNull(),
-            'subject_id' => $this->integer()->null(),
-            'subject_semestr_id' => $this->integer()->null(),
-            'user_id' => $this->integer()->null(),
-            'teacher_access_id' => $this->integer()->null(),
 
+            'subject_id' => $this->integer()->null(),
+            'subject_topic_id' => $this->integer()->notNull(),
+            'lang_id' => $this->integer()->notNull(),
             'type' => $this->integer()->notNull(),
+
             'text' => $this->getDb()->getSchema()->createColumnSchemaBuilder('longtext')->null(),
             'description' => $this->text()->null(),
             'file' => $this->string(255)->null(),
@@ -46,11 +45,16 @@ class m230621_115024_create_subject_content_table extends Migration
             'created_by' => $this->integer()->notNull()->defaultValue(0),
             'updated_by' => $this->integer()->notNull()->defaultValue(0),
             'is_deleted' => $this->tinyInteger()->notNull()->defaultValue(0),
+
+            'user_id' => $this->integer()->null(),
+            'teacher_access_id' => $this->integer()->null(),
+
+
         ], $tableOptions);
 
-        $this->addForeignKey('mk_subject_content_table_subject_topic_table', 'subject_content', 'subject_topic_id', 'subject_topic', 'id');
         $this->addForeignKey('mk_subject_content_table_subject_table', 'subject_content', 'subject_id', 'subject', 'id');
-        $this->addForeignKey('mk_subject_content_table_subject_semestr_table', 'subject_content', 'subject_semestr_id', 'subject_semestr', 'id');
+        $this->addForeignKey('mk_subject_content_table_subject_topic_table', 'subject_content', 'subject_topic_id', 'subject_topic', 'id');
+        $this->addForeignKey('mk_subject_content_table_lang_table', 'subject_content', 'lang_id', 'languages', 'id');
         $this->addForeignKey('mk_subject_content_table_user_table', 'subject_content', 'user_id', 'users', 'id');
         $this->addForeignKey('mk_subject_content_table_teacher_access_table', 'subject_content', 'teacher_access_id', 'teacher_access', 'id');
 

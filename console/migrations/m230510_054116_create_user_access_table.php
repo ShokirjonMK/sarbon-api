@@ -33,8 +33,6 @@ class m230510_054116_create_user_access_table extends Migration
             'is_leader' => $this->tinyInteger()->Null()->defaultValue(0),
             'table_name' => $this->string(255)->Null(),
             'role_name' => $this->string(255)->Null(),
-            'work_load_id' => $this->integer()->null(),
-            'work_rate_id' => $this->integer()->null(),
 
             'order' => $this->tinyInteger(1)->defaultValue(1),
             'status' => $this->tinyInteger(1)->defaultValue(1),
@@ -46,8 +44,6 @@ class m230510_054116_create_user_access_table extends Migration
         ], $tableOptions);
 
         $this->addForeignKey('mk_user_access_table_user_access_type_table', 'user_access', 'user_access_type_id', 'user_access_type', 'id');
-        $this->addForeignKey('mk_user_access_table_work_load_table', 'user_access', 'work_load_id', 'work_load', 'id', 'CASCADE');
-        $this->addForeignKey('mk_user_access_table_work_rate_table', 'user_access', 'work_rate_id', 'work_rate', 'id' , 'CASCADE');
     }
 
     /**

@@ -106,13 +106,37 @@ class FinalExamTestStartController extends ApiActiveController
             return $this->response(0, _e('Data not found.'), null, null, ResponseStatus::NOT_FOUND);
         }
 
-        $start = $model->finalExamTestStart;
-        if ($start->status == 2) {
-            $isIpCheck = FinalExamTestStart::ipCheck($start);
-            if (!$isIpCheck['is_ok']) {
-                return $this->response(2, _e('Sizning qurilmangizga ruxsat berilmagan.'), null, null, ResponseStatus::METHOD_NOT_ALLOWED);
-            }
+        $post = Yii::$app->request->post();
+        $result = FinalExamTestQuestion::studentUpdate($model, $post);
+        if (!is_array($result)) {
+            return $this->response(1, _e('Question successfully update.'), $model, null, ResponseStatus::OK);
+        } else {
+            return $this->response(0, _e('There is an error occurred while processing.'), null, $result, ResponseStatus::UPROCESSABLE_ENTITY);
         }
+    }
+
+
+
+    public function actionStudentUpdate2222($lang , $id)
+    {
+        $student = current_student();
+        $model = FinalExamTestQuestion::findOne([
+            'id' => $id,
+            'student_id' => $student->id,
+            'is_deleted' => 0,
+        ]);
+
+        if (!$model) {
+            return $this->response(0, _e('Data not found.'), null, null, ResponseStatus::NOT_FOUND);
+        }
+
+//        $start = $model->finalExamTestStart;
+//        if ($start->status == 2) {
+//            $isIpCheck = FinalExamTestStart::ipCheck($start);
+//            if (!$isIpCheck['is_ok']) {
+//                return $this->response(2, _e('Sizning qurilmangizga ruxsat berilmagan.'), null, null, ResponseStatus::METHOD_NOT_ALLOWED);
+//            }
+//        }
 
         $post = Yii::$app->request->post();
         $result = FinalExamTestQuestion::studentUpdate($model, $post);

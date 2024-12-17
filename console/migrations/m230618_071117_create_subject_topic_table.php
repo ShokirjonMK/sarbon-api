@@ -27,12 +27,20 @@ class m230618_071117_create_subject_topic_table extends Migration
 
         $this->createTable('{{%subject_topic}}', [
             'id' => $this->primaryKey(),
-            'subject_semestr_id' => $this->integer()->notNull(),
+            'teacher_access_id' => $this->integer()->null(),
             'subject_id' => $this->integer()->notNull(),
+            'parent_id' => $this->integer()->null(),
             'lang_id' => $this->integer()->notNull(),
             'subject_category_id' => $this->integer()->null()->comment('Fan turlari boyicha topic uchun'),
             'name' => $this->text()->notNull(),
             'description' => $this->text()->null(),
+            'hours' => $this->integer()->notNull()->defaultValue(0),
+
+            'allotted_time' => $this->integer()->null(),
+            'attempts_count' => $this->integer()->null(),
+            'duration_reading_time' => $this->integer()->null(),
+            'test_count' => $this->integer()->defaultValue(0),
+            'min_percentage' => $this->float()->defaultValue(0),
 
             'order'=> $this->tinyInteger(1)->defaultValue(1),
             'status' => $this->tinyInteger(1)->defaultValue(1),
@@ -42,9 +50,10 @@ class m230618_071117_create_subject_topic_table extends Migration
             'updated_by' => $this->integer()->notNull()->defaultValue(0),
             'is_deleted' => $this->tinyInteger()->notNull()->defaultValue(0),
         ],$tableOptions);
-        $this->addForeignKey('mk_subject_topic_table_subject_semestr_table', 'subject_topic', 'subject_semestr_id', 'subject_semestr', 'id');
+        $this->addForeignKey('mk_subject_topic_table_teacher_access_table', 'subject_topic', 'teacher_access_id', 'teacher_access', 'id');
+        $this->addForeignKey('mk_subject_topic_table_parent_table', 'subject_topic', 'parent_id', 'subject_topic', 'id');
         $this->addForeignKey('mk_subject_topic_table_subject_table', 'subject_topic', 'subject_id', 'subject', 'id');
-        $this->addForeignKey('mk_subject_topic_table_lang_table', 'subject_topic', 'lang_id', 'language', 'id');
+        $this->addForeignKey('mk_subject_topic_table_lang_table', 'subject_topic', 'lang_id', 'languages', 'id');
         $this->addForeignKey('mk_subject_topic_table_subject_category_table', 'subject_topic', 'subject_category_id', 'subject_category', 'id');
     }
 

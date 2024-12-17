@@ -65,12 +65,23 @@ class Subject extends \yii\db\ActiveRecord
             [
                 [
                     'kafedra_id',
+                    'semestr_id',
+                    'type',
+                    'subject_type_id',
                     'edu_type_id',
+//                    'edu_form_id',
+                    'edu_semestr_exams_types',
+                    'edu_semestr_subject_category_times'
                 ],
                 'required'],
-            [['kafedra_id','edu_type_id','order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
+            [['subject_type_id','kafedra_id', 'all_time' , 'question_count', 'semestr_id', 'parent_id','edu_type_id','edu_form_id', 'type', 'order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
+            [['credit','all_ball_yuklama','max_ball'],'double'],
             [['kafedra_id'], 'exist', 'skipOnError' => true, 'targetClass' => Kafedra::className(), 'targetAttribute' => ['kafedra_id' => 'id']],
+            [['semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => Semestr::className(), 'targetAttribute' => ['semestr_id' => 'id']],
+            [['parent_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['parent_id' => 'id']],
+            [['edu_form_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduForm::className(), 'targetAttribute' => ['edu_form_id' => 'id']],
             [['edu_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduType::className(), 'targetAttribute' => ['edu_type_id' => 'id']],
+            [['subject_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => SubjectType::className(), 'targetAttribute' => ['subject_type_id' => 'id']],
         ];
     }
 
@@ -105,10 +116,25 @@ class Subject extends \yii\db\ActiveRecord
             'description' => function ($model) {
                 return $model->translate->description ?? '';
             },
-
+            // 'lang' => function ($model) {
+            //     return Yii::$app->request->get('lang');
+            // },
             'kafedra_id',
+            'semestr_id',
+            'parent_id',
+            'type',
+            'subject_type_id',
             'edu_type_id',
+            'edu_form_id',
+            'edu_semestr_exams_types',
+            'edu_semestr_subject_category_times',
+            'credit',
+            'auditory_time',
+            'max_ball',
+            'all_time' ,
+            'question_count',
 
+            'is_deleted',
             'order',
             'status',
             'created_at',
@@ -122,6 +148,12 @@ class Subject extends \yii\db\ActiveRecord
     public function extraFields()
     {
         $extraFields = [
+            'subjectSillabus',
+            'semestr',
+            'child',
+            'parent',
+            'timeTables',
+            'teacherAccesses',
             'kafedra',
             'eduForm',
             'eduType',
@@ -148,8 +180,10 @@ class Subject extends \yii\db\ActiveRecord
             'topics',
             'topicsCount',
 
-            'subjectSemestr',
-            'eduYearSubjectSemestr',
+            'surveyAnswers',
+            'surveyAnswersSum',
+            'surveyAnswersCount',
+            'surveyAnswerAverage',
 
             'createdBy',
             'updatedBy',
@@ -252,21 +286,6 @@ class Subject extends \yii\db\ActiveRecord
     public function getTopics()
     {
         return $this->hasMany(SubjectTopic::className(), ['subject_id' => 'id'])->onCondition(['is_deleted' => 0]);
-    }
-
-    public function getSubjectSemestr()
-    {
-        return $this->hasMany(SubjectSemestr::className(), ['id' => 'subject_semestr_id'])->onCondition(['is_deleted' => 0]);
-    }
-
-    public function getEduYearSubjectSemestr()
-    {
-        $eduYearid = Yii::$app->request->get('edu_year_id');
-        $semestrId = Yii::$app->request->get('semestr_id');
-        $eduFormId = Yii::$app->request->get('edu_form_id');
-
-        return $this->hasMany(SubjectSemestr::className(), ['subject_id' => 'id'])
-            ->where(['is_deleted' => 0 , 'edu_year_id' => $eduYearid, 'semestr_id' => $semestrId , 'edu_form_id' => $eduFormId]);
     }
 
     public function getTopicsCount() {
@@ -468,17 +487,114 @@ class Subject extends \yii\db\ActiveRecord
         $transaction = Yii::$app->db->beginTransaction();
         $errors = [];
 
-        if (!$post) {
-            $errors[] = ['all' => [_e('Please send data.')]];
-        }
-
         if (!($model->validate())) {
             $errors[] = $model->errors;
             $transaction->rollBack();
             return simplify_errors($errors);
         }
 
+        if (isset($post))
+
         $has_error = Translate::checkingAll($post);
+
+        if ($has_error['status']) {
+
+            $json_errors = [];
+            $post['edu_semestr_exams_types'] = str_replace("'", "", $post['edu_semestr_exams_types']);
+            if (!isJsonMK($post['edu_semestr_exams_types'])) {
+                $json_errors['edu_semestr_exams_types'] = [_e('Must be Json')];
+            }
+
+            $post['edu_semestr_subject_category_times'] = str_replace("'", "", $post['edu_semestr_subject_category_times']);
+            if (!isJsonMK($post['edu_semestr_subject_category_times'])) {
+                $json_errors['edu_semestr_subject_category_times'] = [_e('Must be Json')];
+            }
+
+            if (count($json_errors) > 0) {
+                $errors[] = $json_errors;
+            }
+
+            $auditory_time = 0;
+            foreach (json_decode($post['edu_semestr_subject_category_times'])
+                     as $edu_semestr_subject_category_times_key => $edu_semestr_subject_category_times_value) {
+                if (SubjectCategory::find()->where(['id' => $edu_semestr_subject_category_times_key])->exists()) {
+                    $auditory_time += $edu_semestr_subject_category_times_value;
+                }
+            }
+            $model->auditory_time = $auditory_time;
+            if ($model->auditory_time != $model->credit * self::CREDIT_TIME) {
+                $errors[] = _e("Total hours do not equal credit hours.");
+            }
+
+            if (!isset($model->max_ball))
+            {
+                $max_ball = 0;
+                foreach (json_decode($post['edu_semestr_exams_types']) as $edu_semestr_exams_types_key => $edu_semestr_exams_types_value) {
+                    if (ExamsType::find()->where(['id' => $edu_semestr_exams_types_key])->exists()) {
+                        $max_ball += $edu_semestr_exams_types_value;
+                    }
+                }
+                $model->max_ball = $max_ball;
+            }
+
+            $model->edu_semestr_subject_category_times = $post['edu_semestr_subject_category_times'];
+            $model->edu_semestr_exams_types = $post['edu_semestr_exams_types'];
+
+            if ($model->save()) {
+                if (isset($post['description'])) {
+                    Translate::createTranslate($post['name'], $model->tableName(), $model->id, $post['description']);
+                } else {
+                    Translate::createTranslate($post['name'], $model->tableName(), $model->id);
+                }
+            } else {
+                $transaction->rollBack();
+                return simplify_errors($errors);
+            }
+        } else {
+            $transaction->rollBack();
+            return double_errors($errors, $has_error['errors']);
+        }
+
+//        if (isset($post['eduForms'])) {
+//            $post['eduForms'] = str_replace("'", "", $post['eduForms']);
+//            $edu_form = json_decode(str_replace("'", "", $post['eduForms']));
+//            if (isset($edu_form)) {
+//                foreach ($edu_form as $key => $eduForm) {
+//                    $edu_form = EduForm::findOne($eduForm);
+//                    if (isset($edu_form)) {
+//
+//                        $model = new Subject();
+//                        $model->load($post, '');
+//                        $model->edu_form_id = $edu_form->id;
+//
+//                        //Logika 2
+//
+//                    }
+//                }
+//            } else {
+//                $errors[] = ['edu_form_id' => _e('Edu Form not found')];
+//            }
+//        }
+
+        if (count($errors) == 0) {
+            $transaction->commit();
+            return true;
+        }
+        $transaction->rollBack();
+        return simplify_errors($errors);
+
+    }
+
+    public static function createItemsss($model, $post)
+    {
+        $transaction = Yii::$app->db->beginTransaction();
+        $errors = [];
+
+        $has_error = Translate::checkingAll($post);
+
+        if (!($model->validate())) {
+            $errors[] = $model->errors;
+        }
 
         if ($has_error['status']) {
             if ($model->save()) {
@@ -487,17 +603,16 @@ class Subject extends \yii\db\ActiveRecord
                 } else {
                     Translate::createTranslate($post['name'], $model->tableName(), $model->id);
                 }
+                $transaction->commit();
+                return true;
+            } else {
+                $transaction->rollBack();
+                return simplify_errors($errors);
             }
         } else {
-            $errors = double_errors($errors, $has_error['errors']);
+            $transaction->rollBack();
+            return double_errors($errors, $has_error['errors']);
         }
-
-        if (count($errors) == 0) {
-            $transaction->commit();
-            return true;
-        }
-        $transaction->rollBack();
-        return simplify_errors($errors);
     }
 
     public static function updateItem($model, $post)
@@ -511,6 +626,59 @@ class Subject extends \yii\db\ActiveRecord
 
         $has_error = Translate::checkingUpdate($post);
         if ($has_error['status']) {
+
+            $json_errors = [];
+
+            if (isset($post['edu_semestr_exams_types'])) {
+                $post['edu_semestr_exams_types'] = str_replace("'", "", $post['edu_semestr_exams_types']);
+                if (!isJsonMK($post['edu_semestr_exams_types'])) {
+                    $json_errors['edu_semestr_exams_types'] = [_e('Must be Json')];
+                } else {
+                    $model->edu_semestr_exams_types = $post['edu_semestr_exams_types'];
+                    $max_ball = 0;
+                    foreach (json_decode($post['edu_semestr_exams_types'])
+                             as $edu_semestr_exams_types_key => $edu_semestr_exams_types_value) {
+                        if (ExamsType::find()
+                            ->where([
+                                'id' => $edu_semestr_exams_types_key
+                            ])
+                            ->exists()
+                        ) {
+                            $max_ball += $edu_semestr_exams_types_value;
+                        } else {
+                            $errors[] = ['Exam Type' => [_e('Exam Type id = '. $edu_semestr_exams_types_key .' not found')]];
+                        }
+                    }
+                    $model->max_ball = $max_ball;
+                }
+            }
+
+
+            if (isset($post['edu_semestr_subject_category_times'])) {
+                $post['edu_semestr_subject_category_times'] = str_replace("'", "", $post['edu_semestr_subject_category_times']);
+                if (!isJsonMK($post['edu_semestr_subject_category_times'])) {
+                    $json_errors['edu_semestr_subject_category_times'] = [_e('Must be Json')];
+                } else {
+                    $model->edu_semestr_subject_category_times = $post['edu_semestr_subject_category_times'];
+                    $auditory_time = 0;
+                    foreach (json_decode($post['edu_semestr_subject_category_times'])
+                             as $edu_semestr_subject_category_times_key => $edu_semestr_subject_category_times_value) {
+                        if (SubjectCategory::find()
+                            ->where([
+                                'id' => $edu_semestr_subject_category_times_key
+                            ])
+                            ->exists()
+                        ) {
+                            $auditory_time += $edu_semestr_subject_category_times_value;
+                        } else {
+                            $errors[] = ['Subject Category' => [_e('Subject Category id = '. $edu_semestr_subject_category_times_key .' not found')]];
+                        }
+                    }
+                    $model->auditory_time = $auditory_time;
+                }
+            }
+
+
             if ($model->save()) {
                 if (isset($post['name'])) {
                     if (isset($post['description'])) {
@@ -519,17 +687,21 @@ class Subject extends \yii\db\ActiveRecord
                         Translate::updateTranslate($post['name'], $model->tableName(), $model->id);
                     }
                 }
+                if (count($errors) == 0) {
+                    $transaction->commit();
+                    return true;
+                } else {
+                    $transaction->rollBack();
+                    return simplify_errors($errors);
+                }
+            } else {
+                $transaction->rollBack();
+                return simplify_errors($errors);
             }
         } else {
-            $errors = double_errors($errors, $has_error['errors']);
+            $transaction->rollBack();
+            return double_errors($errors, $has_error['errors']);
         }
-
-        if (count($errors) == 0) {
-            $transaction->commit();
-            return true;
-        }
-        $transaction->rollBack();
-        return simplify_errors($errors);
     }
 
 

@@ -76,8 +76,7 @@ class TestController extends ApiController
         if (!$model) {
             return $this->response(0, _e('Data not found.'), null, null, ResponseStatus::NOT_FOUND);
         }
-        $model->subject_topic_id = null;
-        $model->subject_semestr_id = null;
+        $model->topic_id = null;
         $model->subject_id = null;
         $model->exam_type_id = null;
         $post = Yii::$app->request->post();

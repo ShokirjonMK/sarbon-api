@@ -29,17 +29,14 @@ class m230506_105342_create_edu_semestr_subject_table extends Migration
             'id' => $this->primaryKey(),
             'edu_semestr_id'=>$this->integer()->notNull(),
             'subject_id'=>$this->integer()->notNull(),
-            'subject_semestr_id'=>$this->integer()->null(),
-            'subject_type_id'=>$this->integer()->null(),
-            'faculty_id'=>$this->integer()->null(),
-            'direction_id'=>$this->integer()->null(),
+            'subject_type_id'=>$this->integer()->Null(),
 
-            'credit'=>$this->double()->defaultValue(0),
+            'credit'=>$this->double()->Null()->defaultValue(0),
+            'auditory_time'=>$this->double()->Null(),
 
-            'auditory_time'=>$this->double()->null(),
-            'all_ball_yuklama'=>$this->integer()->null()->defaultValue(0),
-            'is_checked'=>$this->integer()->null()->defaultValue(0),
-            'max_ball'=>$this->integer()->null()->defaultValue(0),
+            'all_ball_yuklama'=>$this->integer()->Null()->defaultValue(0),
+            'is_checked'=>$this->integer()->Null()->defaultValue(0),
+            'max_ball'=>$this->integer()->Null()->defaultValue(0),
 
             'order'=>$this->tinyInteger(1)->defaultValue(1),
             'status' => $this->tinyInteger(1)->defaultValue(1),
@@ -48,6 +45,9 @@ class m230506_105342_create_edu_semestr_subject_table extends Migration
             'created_by' => $this->integer()->notNull()->defaultValue(0),
             'updated_by' => $this->integer()->notNull()->defaultValue(0),
             'is_deleted' => $this->tinyInteger()->notNull()->defaultValue(0),
+
+            'faculty_id'=>$this->integer()->Null(),
+            'direction_id'=>$this->integer()->Null(),
         ], $tableOptions);
         $this->addForeignKey('mk_edu_semestr_subject_table_edu_semestr_table', 'edu_semestr_subject', 'edu_semestr_id', 'edu_semestr', 'id');
         $this->addForeignKey('mk_edu_semestr_subject_table_subject_table', 'edu_semestr_subject', 'subject_id', 'subject', 'id');

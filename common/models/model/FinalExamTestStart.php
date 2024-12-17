@@ -348,7 +348,7 @@ class FinalExamTestStart extends \yii\db\ActiveRecord
                             $model->start_time = $time;
                             $model->finish_time = $end_time;
                             $model->status = 2;
-                            $model->save(false);
+                            $model->update(false);
                         } elseif ($model->start_time > $time) {
                             $errors[] = [_e('Imtixon boshlanishiga vaqt bor.')];
                         } else {
@@ -399,17 +399,17 @@ class FinalExamTestStart extends \yii\db\ActiveRecord
         $correct = $model->questionsCorrectCount;
         $ball = round(($mark->max_ball / $subject->question_count) * $correct);
 
-        $maxBall = $mark->max_ball;
-        if ($mark->faculty_id == 6) {
-            $minBall30 = $maxBall * 0.45;
-            $minBall60 = $maxBall * 0.6;
-            if ($minBall30 <= $ball && $minBall60 > $ball) {
-                $numbers = [60, 65, 70];
-                $randBall = $numbers[array_rand($numbers)];
-                $randBall = round($maxBall * ($randBall / 100));
-                $ball = $randBall;
-            }
-        }
+//        $maxBall = $mark->max_ball;
+//        if ($mark->faculty_id == 6) {
+//            $minBall30 = $maxBall * 0.45;
+//            $minBall60 = $maxBall * 0.6;
+//            if ($minBall30 <= $ball && $minBall60 > $ball) {
+//                $numbers = [60, 65, 70];
+//                $randBall = $numbers[array_rand($numbers)];
+//                $randBall = round($maxBall * ($randBall / 100));
+//                $ball = $randBall;
+//            }
+//        }
 
         if ($model->status == 2) {
             if ($model->start_time <= $time && $model->finish_time > $time) {
@@ -419,7 +419,7 @@ class FinalExamTestStart extends \yii\db\ActiveRecord
         $model->status = 3;
         $model->correct = $correct;
         $model->ball = $ball;
-        $model->save(false);
+        $model->update(false);
 
         if (empty($errors)) {
             return ['is_ok' => true , 'data' => $model];
@@ -477,6 +477,12 @@ class FinalExamTestStart extends \yii\db\ActiveRecord
 
         $parts = explode('.', $getIpMK);
         if (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '192.168') {
+            return true;
+        } elseif (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '93.188') {
+            return true;
+        } elseif (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '86.62') {
+            return true;
+        } elseif (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '213.230') {
             return true;
         }
 

@@ -122,46 +122,37 @@ class TeacherAccessController extends ApiActiveController
         $finish_time = strtotime($finish_time);
 
         // Build the query
+//        $examUserIds = FinalExam::find()
+//            ->select('user_id')
+//            ->where(['is_deleted' => 0]);
+//            ->andWhere([
+//                'or',
+//                ['between', 'start_time', $start_time, $finish_time],
+//                ['between', 'finish_time', $start_time, $finish_time],
+//                ['and', ['<=', 'start_time', $start_time], ['>=', 'finish_time', $finish_time]],
+//            ])
+//            ->column();
+
         $query = User::find()
             ->alias('u')
             ->with(['profile'])
-            ->leftJoin('profile', 'profile.user_id = u.id')
-            ->leftJoin('auth_assignment', 'auth_assignment.user_id = u.id')
+            ->innerJoin('profile', 'profile.user_id = u.id')
+            ->innerJoin('auth_assignment', 'auth_assignment.user_id = u.id')
             ->where(['u.deleted' => 0])
             ->andWhere(['not in', 'auth_assignment.item_name', ['admin', currentRole()]])
-            ->groupBy('profile.user_id')
-            ->andFilterWhere(['like', 'u.username', Yii::$app->request->get('query')]);
-
-        // Filter for non-admin roles
-        if (!isRole('admin')) {
-            $roleIds = AuthAssignment::find()
-                ->select('user_id')
-                ->where(['in', 'auth_assignment.item_name', AuthChild::find()->select('child')->where(['in', 'parent', currentRole()])]);
-            $query->andFilterWhere(['in', 'u.id', $roleIds]);
-        }
-
+            ->andFilterWhere(['like', 'u.username', Yii::$app->request->get('query')])
+//            ->andFilterWhere(['not in', 'u.id', $examUserIds])
+            ->groupBy('u.id');
 
         $filter = Yii::$app->request->get('filter');
         $filter = json_decode(str_replace("'", "", $filter));
         if ($filter) {
             foreach ($filter as $attribute => $value) {
                 if ($attribute === 'role_name') {
-                    $query->andWhere(['in', 'auth_assignment.item_name', (array) $value]);
+                    $query->andWhere(['auth_assignment.item_name' => (array)$value]);
                 }
             }
         }
-
-
-        $query->andFilterWhere(['not in', 'u.id', FinalExam::find()
-            ->select('user_id')
-            ->where(['is_deleted' => 0])
-            ->andWhere([
-                'or',
-                ['between', 'start_time', $start_time, $finish_time],
-                ['between', 'finish_time', $start_time, $finish_time],
-                ['and', ['<=', 'start_time', $start_time], ['>=', 'finish_time', $finish_time]],
-            ])
-        ]);
 
 
         $query = $this->sort($query);

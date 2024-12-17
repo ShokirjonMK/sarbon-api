@@ -849,7 +849,6 @@ class FinalExam extends \yii\db\ActiveRecord
                     $starts = FinalExamTestStart::find()
                         ->where([
                             'final_exam_test_id' => $query->id,
-                            'status' => 1,
                             'is_deleted' => 0
                         ])->all();
                     if (!empty($starts)) {
@@ -857,7 +856,8 @@ class FinalExam extends \yii\db\ActiveRecord
                             $start->setAttributes([
                                 'start_time' => $this->start_time,
                                 'finish_time' => $this->finish_time,
-                                'exam_form_type' => $this->exam_form_type
+                                'exam_form_type' => $this->exam_form_type,
+                                'status' => 1
                             ]);
                             $start->save(false);
                         }
@@ -945,16 +945,12 @@ class FinalExam extends \yii\db\ActiveRecord
                 $starts = $test->finalExamTestStart;
                 if (count($starts) > 0) {
                     foreach ($starts as $start) {
-                        if ($start->status == 2) {
+                        if ($start->status < 3) {
                             $result = FinalExamTestStart::finish($start);
                             if (!$result['is_ok']) {
                                 return ['is_ok' => false, 'errors' => $result['errors']];
                             }
                             $start = $result['data'];
-                        } elseif ($start->status != 2 && $start->status != 3) {
-                            $start->status = 3;
-                            $start->correct = 0;
-                            $start->save(false);
                         }
                         if ($start->ball > $ball) {
                             $ball = $start->ball;

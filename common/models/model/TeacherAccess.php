@@ -14,7 +14,6 @@ use yii\behaviors\TimestampBehavior;
  * @property int $id
  * @property int $user_id
  * @property int $subject_id
- * @property int $subject_semestr_id
  * @property int $language_id
  * @property int $is_lecture
  * @property int|null $order
@@ -113,7 +112,6 @@ class TeacherAccess extends \yii\db\ActiveRecord
         $extraFields =  [
             'language',
             'subject',
-            'subjectSemestr',
             'subjectAll',
             'teacher',
             'examStudentCount',
@@ -184,12 +182,7 @@ class TeacherAccess extends \yii\db\ActiveRecord
 
     public function getLanguage()
     {
-        return $this->hasOne(Language::className(), ['id' => 'language_id']);
-    }
-
-    public function getSubjectSemestr()
-    {
-        return $this->hasOne(SubjectSemestr::className(), ['id' => 'subject_semestr_id']);
+        return $this->hasOne(Languages::className(), ['id' => 'language_id']);
     }
 
     public function getSubjectCategory()
@@ -484,8 +477,8 @@ class TeacherAccess extends \yii\db\ActiveRecord
                 if (!isset($teacher_access_value)) {
                     $errors[] = ['Lang ID or Subject Category ID' => [_e('Not found')]];
                 }
-                $subjectSemestr = SubjectSemestr::findOne($teacher_access_key);
-                if (isset($subjectSemestr)) {
+                $subject = Subject::findOne($teacher_access_key);
+                if (isset($subject)) {
                     foreach ($teacher_access_value as $langKey => $lecture) {
                         if (!isset($lecture)) {
                             $errors[] = ['Subject Category ID' => [_e('Not found')]];
@@ -497,16 +490,14 @@ class TeacherAccess extends \yii\db\ActiveRecord
                                 if (isset($subject_category)) {
                                     $userAccessBefore = TeacherAccess::findOne([
                                         'user_id' => $model->id,
-                                        'subject_id' => $subjectSemestr->subject_id,
-                                        'subject_semestr_id' => $subjectSemestr->id,
+                                        'subject_id' => $teacher_access_key,
                                         'language_id' => $langKey,
                                         'is_lecture' => $subject_category_value,
                                     ]);
                                     if (!isset($userAccessBefore)) {
                                         $teacherAccessNew = new TeacherAccess();
                                         $teacherAccessNew->user_id = $model->id;
-                                        $teacherAccessNew->subject_id = $subjectSemestr->subject_id;
-                                        $teacherAccessNew->subject_semestr_id = $subjectSemestr->id;
+                                        $teacherAccessNew->subject_id = $teacher_access_key;
                                         $teacherAccessNew->language_id = $langKey;
                                         $teacherAccessNew->is_lecture = $subject_category_value;
                                         $teacherAccessNew->save(false);
@@ -524,7 +515,7 @@ class TeacherAccess extends \yii\db\ActiveRecord
                         }
                     }
                 } else {
-                    $errors[] = ['subject_semestr_id' => [_e('Not found')]];
+                    $errors[] = ['subject_id' => [_e('Not found')]];
                 }
             }
         }

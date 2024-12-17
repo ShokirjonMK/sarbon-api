@@ -562,11 +562,11 @@ class StudentMark extends \yii\db\ActiveRecord
                             $ball = 0;
                             if (count($marks) > 0) {
                                 foreach ($marks as $mark) {
-                                    $ball = $ball + $mark->ball;
+                                    $ball = $ball + (int)$mark->ball;
                                 }
                             }
                             $studentVedomst = $studentMark->studentVedomst;
-                            $studentVedomst->ball = $ball;
+                            $studentVedomst->ball = (int)$ball;
                             $studentVedomst->passed = 1;
                             $studentVedomst->update(false);
                             $studentSemestrSubject = $studentVedomst->studentSemestrSubject;
