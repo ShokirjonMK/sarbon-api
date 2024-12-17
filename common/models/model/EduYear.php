@@ -286,7 +286,7 @@ class EduYear extends \yii\db\ActiveRecord
                 }
 
             } else {
-                for ($i=2020; $i<=2030; $i++) {
+                for ($i=2023; $i<=2035; $i++) {
                     $model = new EduYear();
                     $model->start_year = $i;
                     $model->end_year = $i+1;
