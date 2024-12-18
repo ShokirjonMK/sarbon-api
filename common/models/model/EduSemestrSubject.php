@@ -447,17 +447,8 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         if ($model->save(false)) {
 
             $subjectSillabus = Subject::findOne(['id' => $post['subject_id'] ?? null]);
-
-            $all_ball_yuklama = 0;
+            $all_time = 0;
             $max_ball = 0;
-
-            $new = new SubjectVedomst();
-            $new->edu_semestr_subject_id = $model->id;
-            $new->edu_semestr_id = $model->edu_semestr_id;
-            $new->edu_plan_id = $model->eduSemestr->eduPlan->id;
-            $new->type = 1;
-            $new->status = 0;
-            $new->save(false);
 
             $model->faculty_id = $model->eduSemestr->eduPlan->faculty_id;
             $model->direction_id = $model->eduSemestr->eduPlan->direction_id;
@@ -476,9 +467,18 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                             $EduSemestrSubjectCategoryTime1->edu_semestr_id = $model->edu_semestr_id;
                             $EduSemestrSubjectCategoryTime1->subject_id = $model->subject_id;
                             $EduSemestrSubjectCategoryTime1->save(false);
-                            $all_ball_yuklama = $all_ball_yuklama + $subjectCatValues;
+                            $subjectCategoryType = $EduSemestrSubjectCategoryTime1->subjectCategory->type;
+                            if ($subjectCategoryType == SubjectCategory::AUDITORY_TIME) {
+                                $auditory_time += $subjectCatValues;
+                            }
+                            $all_time += $subjectCatValues;
                         }
                     }
+                    $model->auditory_time = $auditory_time;
+                }
+
+                if ($all_time != $model->credit * Subject::CREDIT_TIME) {
+                    $errors[] = _e("Total hours do not equal credit hours.");
                 }
 
                 if (isset($subjectSillabus->edu_semestr_exams_types)) {
@@ -494,20 +494,25 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                         }
                     }
                 }
-                $model->all_ball_yuklama = $all_ball_yuklama;
+                $model->all_ball_yuklama = 100;
                 $model->max_ball = $max_ball;
                 $model->subject_type_id = $subjectSillabus->subject_type_id;
                 $model->credit = $subjectSillabus->credit;
                 $model->auditory_time = $subjectSillabus->auditory_time;
             }
 
-            $model->update(false);
+            if ($model->max_ball != 100) {
+                $errors[] = _e("The total score must be 100.");
+            }
+        }
+
+        if (count($errors) == 0) {
+            $model->save(false);
             $transaction->commit();
             return true;
-        } else {
-            $transaction->rollBack();
-            return simplify_errors($errors);
         }
+        $transaction->rollBack();
+        return simplify_errors($errors);
     }
 
     public static function updateItem($model, $post)
@@ -519,9 +524,10 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         }
 
         if ($model->save(false)) {
-            $all_ball_yuklama = 0;
+            $all_time = 0;
             $max_ball = 0;
             $auditory_time = 0;
+
             if (isset($post['SubjectCategory'])) {
                 $SubjectCategory = json_decode(str_replace("'", "", $post['SubjectCategory']));
                 if (isset($SubjectCategory)) {
@@ -534,17 +540,20 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                             $EduSemestrSubjectCategoryTime->hours = $subjectCatValues;
                             $EduSemestrSubjectCategoryTime->edu_semestr_id = $model->edu_semestr_id;
                             $EduSemestrSubjectCategoryTime->subject_id = $model->subject_id;
-                            $EduSemestrSubjectCategoryTime->save();
-                            $auditory_time += $subjectCatValues;
-                            $all_ball_yuklama = $all_ball_yuklama + $subjectCatValues;
+                            $EduSemestrSubjectCategoryTime->save(false);
+
+                            $subjectCategoryType = $EduSemestrSubjectCategoryTime->subjectCategory->type;
+                            if ($subjectCategoryType == SubjectCategory::AUDITORY_TIME) {
+                                $auditory_time += $subjectCatValues;
+                            }
+                            $all_time += $subjectCatValues;
                         }
                     }
                     $model->auditory_time = $auditory_time;
-                    $model->all_ball_yuklama = $all_ball_yuklama;
                 }
             }
 
-            if ($model->auditory_time != $model->credit * Subject::CREDIT_TIME) {
+            if ($all_time != $model->credit * Subject::CREDIT_TIME) {
                 $errors[] = _e("Total hours do not equal credit hours.");
             }
 
@@ -574,6 +583,9 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                     }
                 }
                 $model->max_ball = $max_ball;
+                if ($model->max_ball != 100) {
+                    $errors[] = _e("The total score must be 100.");
+                }
             }
 
             if (count($errors) == 0) {
