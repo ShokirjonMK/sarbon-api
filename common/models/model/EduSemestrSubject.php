@@ -450,8 +450,10 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             $all_time = 0;
             $max_ball = 0;
 
-            $model->faculty_id = $model->eduSemestr->eduPlan->faculty_id;
-            $model->direction_id = $model->eduSemestr->eduPlan->direction_id;
+            $eduSemestr = $model->eduSemestr;
+
+            $model->faculty_id = $eduSemestr->faculty_id;
+            $model->direction_id = $eduSemestr->direction_id;
             $model->update(false);
 
             if (isset($subjectSillabus)) {
@@ -519,6 +521,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
     {
         $transaction = Yii::$app->db->beginTransaction();
         $errors = [];
+
         if (!($model->validate())) {
             $errors[] = $model->errors;
         }
@@ -528,19 +531,36 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             $max_ball = 0;
             $auditory_time = 0;
 
+            $eduSemestr = $model->eduSemestr;
+
+            $model->faculty_id = $eduSemestr->faculty_id;
+            $model->direction_id = $eduSemestr->direction_id;
+
             if (isset($post['SubjectCategory'])) {
                 $SubjectCategory = json_decode(str_replace("'", "", $post['SubjectCategory']));
                 if (isset($SubjectCategory)) {
-                    EduSemestrSubjectCategoryTime::deleteAll(['edu_semestr_subject_id' => $model->id]);
+                    EduSemestrExamsType::updateAll(['status' => 0], ['edu_semestr_subject_id' => $model->id]);
                     foreach ($SubjectCategory as $subjectCatId => $subjectCatValues) {
                         if (SubjectCategory::find()->where(['id' => $subjectCatId])->exists()) {
-                            $EduSemestrSubjectCategoryTime = new EduSemestrSubjectCategoryTime();
-                            $EduSemestrSubjectCategoryTime->edu_semestr_subject_id = $model->id;
-                            $EduSemestrSubjectCategoryTime->subject_category_id = $subjectCatId;
-                            $EduSemestrSubjectCategoryTime->hours = $subjectCatValues;
-                            $EduSemestrSubjectCategoryTime->edu_semestr_id = $model->edu_semestr_id;
-                            $EduSemestrSubjectCategoryTime->subject_id = $model->subject_id;
-                            $EduSemestrSubjectCategoryTime->save(false);
+                            $EduSemestrSubjectCategoryTime = EduSemestrSubjectCategoryTime::findOne([
+                                'edu_semestr_subject_id' => $model->id,
+                                'subject_category_id' => $subjectCatId,
+                            ]);
+                            if ($EduSemestrSubjectCategoryTime) {
+                                $EduSemestrSubjectCategoryTime->hours = $subjectCatValues;
+                                $EduSemestrSubjectCategoryTime->edu_semestr_id = $model->edu_semestr_id;
+                                $EduSemestrSubjectCategoryTime->subject_id = $model->subject_id;
+                                $EduSemestrSubjectCategoryTime->status = 1;
+                                $EduSemestrSubjectCategoryTime->update(false);
+                            } else {
+                                $EduSemestrSubjectCategoryTime = new EduSemestrSubjectCategoryTime();
+                                $EduSemestrSubjectCategoryTime->edu_semestr_subject_id = $model->id;
+                                $EduSemestrSubjectCategoryTime->subject_category_id = $subjectCatId;
+                                $EduSemestrSubjectCategoryTime->hours = $subjectCatValues;
+                                $EduSemestrSubjectCategoryTime->edu_semestr_id = $model->edu_semestr_id;
+                                $EduSemestrSubjectCategoryTime->subject_id = $model->subject_id;
+                                $EduSemestrSubjectCategoryTime->save(false);
+                            }
 
                             $subjectCategoryType = $EduSemestrSubjectCategoryTime->subjectCategory->type;
                             if ($subjectCategoryType == SubjectCategory::AUDITORY_TIME) {
@@ -562,24 +582,22 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                 EduSemestrExamsType::updateAll(['status' => 0], ['edu_semestr_subject_id' => $model->id]);
                 foreach ($EduSemestrExamType as $examsTypeId1 => $examsTypeMaxBal1) {
                     if (ExamsType::find()->where(['id' => $examsTypeId1,])->exists()) {
-                        $queryExamType = EduSemestrExamsType::findOne([
+                        $EduSemestrExamsType = EduSemestrExamsType::findOne([
                             'edu_semestr_subject_id' => $model->id,
                             'exams_type_id' => $examsTypeId1,
                         ]);
-                        if (isset($queryExamType)) {
-                            $queryExamType->max_ball = $examsTypeMaxBal1;
-                            $queryExamType->status = 1;
-                            $queryExamType->save(false);
-                            $max_ball = $max_ball + $examsTypeMaxBal1;
+                        if (isset($EduSemestrExamsType)) {
+                            $EduSemestrExamsType->max_ball = $examsTypeMaxBal1;
+                            $EduSemestrExamsType->status = 1;
+                            $EduSemestrExamsType->save(false);
                         } else {
                             $EduSemestrExamsType = new EduSemestrExamsType();
                             $EduSemestrExamsType->edu_semestr_subject_id = $model->id;
                             $EduSemestrExamsType->exams_type_id = $examsTypeId1;
                             $EduSemestrExamsType->max_ball = $examsTypeMaxBal1;
                             $EduSemestrExamsType->save(false);
-                            $max_ball = $max_ball + $examsTypeMaxBal1;
                         }
-
+                        $max_ball += $examsTypeMaxBal1;
                     }
                 }
                 $model->max_ball = $max_ball;
