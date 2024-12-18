@@ -65,7 +65,6 @@ class Subject extends \yii\db\ActiveRecord
             [
                 [
                     'kafedra_id',
-                    'semestr_id',
                     'type',
                     'subject_type_id',
                     'edu_type_id',
@@ -74,10 +73,10 @@ class Subject extends \yii\db\ActiveRecord
                     'edu_semestr_subject_category_times'
                 ],
                 'required'],
-            [['subject_type_id','kafedra_id', 'all_time' , 'question_count', 'semestr_id', 'parent_id','edu_type_id','edu_form_id', 'type', 'order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
+            [['subject_type_id','kafedra_id', 'all_time' , 'question_count', 'parent_id','edu_type_id','edu_form_id', 'type', 'order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
             [['credit','all_ball_yuklama','max_ball'],'double'],
             [['kafedra_id'], 'exist', 'skipOnError' => true, 'targetClass' => Kafedra::className(), 'targetAttribute' => ['kafedra_id' => 'id']],
-            [['semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => Semestr::className(), 'targetAttribute' => ['semestr_id' => 'id']],
+//            [['semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => Semestr::className(), 'targetAttribute' => ['semestr_id' => 'id']],
             [['parent_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['parent_id' => 'id']],
             [['edu_form_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduForm::className(), 'targetAttribute' => ['edu_form_id' => 'id']],
             [['edu_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduType::className(), 'targetAttribute' => ['edu_type_id' => 'id']],
@@ -96,7 +95,6 @@ class Subject extends \yii\db\ActiveRecord
                 return $model->translate->description ?? '';
             },
             'kafedra_id',
-            'semestr_id',
             'parent_id',
             'type',
             'subject_type_id',
