@@ -110,11 +110,11 @@ class SubjectController extends ApiActiveController
 
     public function actionCreate($lang)
     {
+        dd(2323232);
         $model = new Subject();
         $post = Yii::$app->request->post();
         $this->load($model, $post);
 
-        dd($model);
         $result = Subject::createItem($model , $post);
         if (!is_array($result)) {
             return $this->response(1, _e($this->controller_name . ' successfully created.'), null, null, ResponseStatus::CREATED);
