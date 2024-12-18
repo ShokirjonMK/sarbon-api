@@ -60,7 +60,6 @@ class Faculty extends \yii\db\ActiveRecord
             [['order', 'user_id', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
             // [['name'], 'string', 'max' => 255],
             [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['user_id' => 'id']],
-            [['dean_deputy_user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['dean_deputy_user_id' => 'id']],
         ];
     }
 
