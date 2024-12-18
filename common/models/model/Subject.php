@@ -116,9 +116,6 @@ class Subject extends \yii\db\ActiveRecord
             'description' => function ($model) {
                 return $model->translate->description ?? '';
             },
-            // 'lang' => function ($model) {
-            //     return Yii::$app->request->get('lang');
-            // },
             'kafedra_id',
             'semestr_id',
             'parent_id',
