@@ -477,6 +477,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                     $model->auditory_time = $auditory_time;
                 }
 
+                $model->credit = $subjectSillabus->credit;
                 if ($all_time != $model->credit * Subject::CREDIT_TIME) {
                     $errors[] = _e("Total hours do not equal credit hours.");
                 }
@@ -494,16 +495,15 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                         }
                     }
                 }
+
                 $model->all_ball_yuklama = 100;
                 $model->max_ball = $max_ball;
                 $model->subject_type_id = $subjectSillabus->subject_type_id;
-                $model->credit = $subjectSillabus->credit;
-                $model->auditory_time = $subjectSillabus->auditory_time;
             }
+        }
 
-            if ($model->max_ball != 100) {
-                $errors[] = _e("The total score must be 100.");
-            }
+        if ($model->max_ball != 100) {
+            $errors[] = _e("The total score must be 100.");
         }
 
         if (count($errors) == 0) {
