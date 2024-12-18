@@ -446,16 +446,8 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
 
         if ($model->save(false)) {
 
-            $eduSemestr = $model->eduSemestr;
-
-            $eduYearId = $eduSemestr->edu_year_id;
-            if ($eduYearId == 7 || $eduYearId == 8) {
-//                $errors[] = _e('You cannot add or edit a subject to this year.');
-//                $transaction->rollBack();
-//                return simplify_errors($errors);
-            }
-
             $subjectSillabus = Subject::findOne(['id' => $post['subject_id'] ?? null]);
+
             $all_ball_yuklama = 0;
             $max_ball = 0;
 
@@ -518,94 +510,6 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         }
     }
 
-    public static function createItemss($model, $post)
-    {
-        $transaction = Yii::$app->db->beginTransaction();
-        $errors = [];
-        if (!($model->validate())) {
-            $errors[] = $model->errors;
-        }
-        $EduSemestrSubject = EduSemestrSubject::findOne([
-            'edu_semestr_id' => $model->edu_semestr_id,
-            'subject_id' => $post['subject_id'] ?? null,
-        ]);
-
-        if (isset($EduSemestrSubject)) {
-            $errors[] = _e('This Edu Subject already exists in This Semester');
-            $transaction->rollBack();
-            return simplify_errors($errors);
-        }
-
-        if ($model->save()) {
-
-            $subjectSillabus = SubjectSillabus::findOne(['subject_id' => $post['subject_id'] ?? null]);
-            $all_ball_yuklama = 0;
-            $max_ball = 0;
-
-            $model->faculty_id = $model->eduSemestr->eduPlan->faculty_id;
-            $model->direction_id = $model->eduSemestr->eduPlan->direction_id;
-            $model->update();
-
-            if (isset($subjectSillabus)) {
-
-                if (isset($subjectSillabus->edu_semestr_subject_category_times)) {
-                    $EduSemestrSubjectCategoryTimes = json_decode(str_replace("'", "", $subjectSillabus->edu_semestr_subject_category_times));
-                    foreach ($EduSemestrSubjectCategoryTimes as $subjectCatId => $subjectCatValues) {
-                        $EduSemestrSubjectCategoryTime1 = new EduSemestrSubjectCategoryTime();
-                        $EduSemestrSubjectCategoryTime1->edu_semestr_subject_id = $model->id;
-                        $EduSemestrSubjectCategoryTime1->subject_category_id = $subjectCatId;
-                        $EduSemestrSubjectCategoryTime1->hours = $subjectCatValues;
-                        $EduSemestrSubjectCategoryTime1->edu_semestr_id = $model->edu_semestr_id;
-                        $EduSemestrSubjectCategoryTime1->subject_id = $model->subject_id;
-                        $EduSemestrSubjectCategoryTime1->save();
-                        $all_ball_yuklama = $all_ball_yuklama + $subjectCatValues;
-                    }
-                }
-
-                if (isset($subjectSillabus->edu_semestr_exams_types)) {
-                    $EduSemestrExamType = json_decode(str_replace("'", "", $subjectSillabus->edu_semestr_exams_types));
-                    foreach ($EduSemestrExamType as $examsTypeId => $examsTypeMaxBal) {
-                        $EduSemestrExamsType1 = new EduSemestrExamsType();
-                        $EduSemestrExamsType1->edu_semestr_subject_id = $model->id;
-                        $EduSemestrExamsType1->exams_type_id = $examsTypeId;
-                        $EduSemestrExamsType1->max_ball = $examsTypeMaxBal;
-                        $EduSemestrExamsType1->save();
-                        $max_ball = $max_ball + $examsTypeMaxBal;
-
-                        /** imtihonlar  imtixon turlari bo'yicha avto yaralishi  */
-                        // $newExam = new Exam();
-                        // $newExam->faculty_id = $model->eduSemestr->eduPlan->faculty_id;
-                        // $newExam->direction_id = $model->eduSemestr->eduPlan->direction_id;
-                        // $newExam->exam_type_id = $examsTypeId;
-                        // $newExam->edu_semestr_subject_id = $model->id;
-                        // //
-                        // $newExam->type = $model->eduSemestr->type ?? 1;
-
-                        // $newExam->start = date("Y-m-d H:i:s");
-                        // $newExam->finish = date("Y-m-d H:i:s");
-                        // $newExam->max_ball = $examsTypeMaxBal;
-                        // $newExam->min_ball = $examsTypeMaxBal;
-                        // $newExam->status = Exam::STATUS_INACTIVE;
-                        // $newExam->save();
-                        /** imtihonlar  imtixon turlari bo'yicha avto yaralishi  */
-                    }
-                }
-                $model->all_ball_yuklama = $all_ball_yuklama;
-                $model->max_ball = $max_ball;
-                $model->subject_type_id = $subjectSillabus->subject_type_id;
-                $model->credit = $subjectSillabus->credit;
-                $model->auditory_time = $subjectSillabus->auditory_time;
-            }
-
-            $model->update();
-            $transaction->commit();
-            return true;
-        } else {
-            $transaction->rollBack();
-            return simplify_errors($errors);
-        }
-    }
-
     public static function updateItem($model, $post)
     {
         $transaction = Yii::$app->db->beginTransaction();
@@ -615,18 +519,15 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         }
 
         if ($model->save(false)) {
-
             $all_ball_yuklama = 0;
             $max_ball = 0;
             $auditory_time = 0;
-
             if (isset($post['SubjectCategory'])) {
                 $SubjectCategory = json_decode(str_replace("'", "", $post['SubjectCategory']));
                 if (isset($SubjectCategory)) {
                     EduSemestrSubjectCategoryTime::deleteAll(['edu_semestr_subject_id' => $model->id]);
                     foreach ($SubjectCategory as $subjectCatId => $subjectCatValues) {
                         if (SubjectCategory::find()->where(['id' => $subjectCatId])->exists()) {
-
                             $EduSemestrSubjectCategoryTime = new EduSemestrSubjectCategoryTime();
                             $EduSemestrSubjectCategoryTime->edu_semestr_subject_id = $model->id;
                             $EduSemestrSubjectCategoryTime->subject_category_id = $subjectCatId;
@@ -636,7 +537,6 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
                             $EduSemestrSubjectCategoryTime->save();
                             $auditory_time += $subjectCatValues;
                             $all_ball_yuklama = $all_ball_yuklama + $subjectCatValues;
-
                         }
                     }
                     $model->auditory_time = $auditory_time;
