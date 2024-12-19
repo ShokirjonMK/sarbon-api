@@ -105,24 +105,15 @@ class m230506_110930_create_profile_table extends Migration
 
         $this->insert('{{%profile}}', [
             'user_id' => 2,
-            'first_name' => 'blackmoon',
-            'last_name' => 'blackmoon_uz',
-            'middle_name' => 'blackmoonuz',
-            'created_at' => time(),
-            'updated_at' => time(),
-        ]);
-
-        $this->insert('{{%profile}}', [
-            'user_id' => 3,
-            'first_name' => 'Iqboljon',
-            'last_name' => 'Uraimov',
+            'first_name' => 'Ik.',
+            'last_name' => 'Anvarovich',
             'middle_name' => 'Anvarjon o\'g\'li',
             'created_at' => time(),
             'updated_at' => time(),
         ]);
 
         $this->insert('{{%profile}}', [
-            'user_id' => 4,
+            'user_id' => 3,
             'first_name' => 'Ahror',
             'last_name' => 'Ahror',
             'middle_name' => 'Ahror',
@@ -131,16 +122,7 @@ class m230506_110930_create_profile_table extends Migration
         ]);
 
         $this->insert('{{%profile}}', [
-            'user_id' => 5,
-            'first_name' => 'Ismoil',
-            'last_name' => 'Ismoil',
-            'middle_name' => 'Ismoil',
-            'created_at' => time(),
-            'updated_at' => time(),
-        ]);
-
-        $this->insert('{{%profile}}', [
-            'user_id' => 6,
+            'user_id' => 4,
             'first_name' => 'Azizxon',
             'last_name' => 'Azizxon',
             'middle_name' => 'Azizxon',
