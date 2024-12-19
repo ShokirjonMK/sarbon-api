@@ -54,8 +54,6 @@ class m200605_201020_init_rbac extends Migration
         $auth->assign($admin, 2);
         $auth->assign($admin, 3);
         $auth->assign($admin, 4);
-        $auth->assign($admin, 5);
-        $auth->assign($admin, 6);
     }
 
     public function down()

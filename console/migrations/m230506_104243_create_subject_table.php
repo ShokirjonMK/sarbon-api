@@ -39,7 +39,6 @@ class m230506_104243_create_subject_table extends Migration
             'edu_semestr_exams_types' => $this->string(255)->notNull(),
             'edu_semestr_subject_category_times' => $this->string(255)->notNull(),
             'credit' => $this->double()->null(),
-            'all_ball_yuklama' => $this->double()->null(),
             'max_ball' => $this->double()->null(),
 
             'order'=>$this->tinyInteger(1)->defaultValue(1),

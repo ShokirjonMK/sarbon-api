@@ -461,7 +461,6 @@ class Subject extends \yii\db\ActiveRecord
         $transaction = Yii::$app->db->beginTransaction();
         $errors = [];
 
-        dd($model);
         if (!($model->validate())) {
             $errors[] = $model->errors;
             $transaction->rollBack();
