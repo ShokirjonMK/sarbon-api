@@ -49,7 +49,7 @@ class WorkLoadController extends ApiActiveController
 
     public function actionCreate($lang)
     {
-        return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::NOT_FOUND);
+//        return $this->response(0, _e('There is an error occurred while processing.'), null, null, ResponseStatus::NOT_FOUND);
         $model = new WorkLoad();
         $post = Yii::$app->request->post();
         $this->load($model, $post);
