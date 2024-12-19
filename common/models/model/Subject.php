@@ -68,15 +68,15 @@ class Subject extends \yii\db\ActiveRecord
                     'type',
                     'subject_type_id',
                     'edu_type_id',
-//                    'edu_form_id',
+                    'edu_form_id',
                     'edu_semestr_exams_types',
                     'edu_semestr_subject_category_times'
                 ],
                 'required'],
             [['subject_type_id','kafedra_id', 'all_time' , 'question_count', 'parent_id','edu_type_id','edu_form_id', 'type', 'order', 'status', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted'], 'integer'],
-            [['credit','all_ball_yuklama','max_ball'],'double'],
+            [['credit','max_ball'],'double'],
             [['kafedra_id'], 'exist', 'skipOnError' => true, 'targetClass' => Kafedra::className(), 'targetAttribute' => ['kafedra_id' => 'id']],
-//            [['semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => Semestr::className(), 'targetAttribute' => ['semestr_id' => 'id']],
+            [['semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => Semestr::className(), 'targetAttribute' => ['semestr_id' => 'id']],
             [['parent_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subject::className(), 'targetAttribute' => ['parent_id' => 'id']],
             [['edu_form_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduForm::className(), 'targetAttribute' => ['edu_form_id' => 'id']],
             [['edu_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => EduType::className(), 'targetAttribute' => ['edu_type_id' => 'id']],
@@ -98,6 +98,7 @@ class Subject extends \yii\db\ActiveRecord
             'parent_id',
             'type',
             'subject_type_id',
+            'semestr_id',
             'edu_type_id',
             'edu_form_id',
             'edu_semestr_exams_types',
@@ -489,32 +490,40 @@ class Subject extends \yii\db\ActiveRecord
             }
 
             $auditory_time = 0;
-            foreach (json_decode($post['edu_semestr_subject_category_times'])
-                     as $edu_semestr_subject_category_times_key => $edu_semestr_subject_category_times_value) {
-                if (SubjectCategory::find()->where(['id' => $edu_semestr_subject_category_times_key])->exists()) {
-                    $auditory_time += $edu_semestr_subject_category_times_value;
+            foreach (json_decode($post['edu_semestr_subject_category_times']) as $subject_category_key => $subject_category_value) {
+                $subjectCategory = SubjectCategory::findOne($subject_category_key);
+                if ($subjectCategory) {
+                    if ($subjectCategory->type == SubjectCategory::AUDITORY_TIME) {
+                        $auditory_time += $subject_category_value;
+                    }
+                } else {
+                    $errors[] = [_e('Category time not found')];
                 }
             }
             $model->auditory_time = $auditory_time;
             if ($model->auditory_time != $model->credit * self::CREDIT_TIME) {
-                $errors[] = _e("Total hours do not equal credit hours.");
+                $errors[] = [_e("Total hours do not equal credit hours.")];
             }
 
-            if (!isset($model->max_ball))
-            {
-                $max_ball = 0;
-                foreach (json_decode($post['edu_semestr_exams_types']) as $edu_semestr_exams_types_key => $edu_semestr_exams_types_value) {
-                    if (ExamsType::find()->where(['id' => $edu_semestr_exams_types_key])->exists()) {
-                        $max_ball += $edu_semestr_exams_types_value;
-                    }
+            $max_ball = 0;
+            foreach (json_decode($post['edu_semestr_exams_types']) as $exams_types_key => $exams_types_value) {
+                $examType = ExamsType::findOne($exams_types_key);
+                if ($examType) {
+                    $max_ball += $exams_types_value;
+                } else {
+                    $errors[] = [_e('Exams type not found')];
                 }
-                $model->max_ball = $max_ball;
+            }
+
+            $model->max_ball = $max_ball;
+            if ($model->max_ball != 100) {
+                $errors[] = [_e("The total score must be 100.")];
             }
 
             $model->edu_semestr_subject_category_times = $post['edu_semestr_subject_category_times'];
             $model->edu_semestr_exams_types = $post['edu_semestr_exams_types'];
 
-            if ($model->save()) {
+            if ($model->save(false)) {
                 if (isset($post['description'])) {
                     Translate::createTranslate($post['name'], $model->tableName(), $model->id, $post['description']);
                 } else {
@@ -529,26 +538,6 @@ class Subject extends \yii\db\ActiveRecord
             return double_errors($errors, $has_error['errors']);
         }
 
-//        if (isset($post['eduForms'])) {
-//            $post['eduForms'] = str_replace("'", "", $post['eduForms']);
-//            $edu_form = json_decode(str_replace("'", "", $post['eduForms']));
-//            if (isset($edu_form)) {
-//                foreach ($edu_form as $key => $eduForm) {
-//                    $edu_form = EduForm::findOne($eduForm);
-//                    if (isset($edu_form)) {
-//
-//                        $model = new Subject();
-//                        $model->load($post, '');
-//                        $model->edu_form_id = $edu_form->id;
-//
-//                        //Logika 2
-//
-//                    }
-//                }
-//            } else {
-//                $errors[] = ['edu_form_id' => _e('Edu Form not found')];
-//            }
-//        }
 
         if (count($errors) == 0) {
             $transaction->commit();
@@ -557,36 +546,6 @@ class Subject extends \yii\db\ActiveRecord
         $transaction->rollBack();
         return simplify_errors($errors);
 
-    }
-
-    public static function createItemsss($model, $post)
-    {
-        $transaction = Yii::$app->db->beginTransaction();
-        $errors = [];
-
-        $has_error = Translate::checkingAll($post);
-
-        if (!($model->validate())) {
-            $errors[] = $model->errors;
-        }
-
-        if ($has_error['status']) {
-            if ($model->save()) {
-                if (isset($post['description'])) {
-                    Translate::createTranslate($post['name'], $model->tableName(), $model->id, $post['description']);
-                } else {
-                    Translate::createTranslate($post['name'], $model->tableName(), $model->id);
-                }
-                $transaction->commit();
-                return true;
-            } else {
-                $transaction->rollBack();
-                return simplify_errors($errors);
-            }
-        } else {
-            $transaction->rollBack();
-            return double_errors($errors, $has_error['errors']);
-        }
     }
 
     public static function updateItem($model, $post)
@@ -601,29 +560,25 @@ class Subject extends \yii\db\ActiveRecord
         $has_error = Translate::checkingUpdate($post);
         if ($has_error['status']) {
 
-            $json_errors = [];
-
             if (isset($post['edu_semestr_exams_types'])) {
                 $post['edu_semestr_exams_types'] = str_replace("'", "", $post['edu_semestr_exams_types']);
                 if (!isJsonMK($post['edu_semestr_exams_types'])) {
-                    $json_errors['edu_semestr_exams_types'] = [_e('Must be Json')];
+                    $errors[] = [_e('Must be Json')];
                 } else {
                     $model->edu_semestr_exams_types = $post['edu_semestr_exams_types'];
                     $max_ball = 0;
-                    foreach (json_decode($post['edu_semestr_exams_types'])
-                             as $edu_semestr_exams_types_key => $edu_semestr_exams_types_value) {
-                        if (ExamsType::find()
-                            ->where([
-                                'id' => $edu_semestr_exams_types_key
-                            ])
-                            ->exists()
-                        ) {
-                            $max_ball += $edu_semestr_exams_types_value;
+                    foreach (json_decode($post['edu_semestr_exams_types']) as $exams_types_key => $exams_types_value) {
+                        $examType = ExamsType::findOne($exams_types_key);
+                        if ($examType) {
+                            $max_ball += $exams_types_value;
                         } else {
-                            $errors[] = ['Exam Type' => [_e('Exam Type id = '. $edu_semestr_exams_types_key .' not found')]];
+                            $errors[] = [_e('Exams type not found')];
                         }
                     }
                     $model->max_ball = $max_ball;
+                    if ($model->max_ball != 100) {
+                        $errors[] = [_e("The total score must be 100.")];
+                    }
                 }
             }
 
@@ -631,42 +586,35 @@ class Subject extends \yii\db\ActiveRecord
             if (isset($post['edu_semestr_subject_category_times'])) {
                 $post['edu_semestr_subject_category_times'] = str_replace("'", "", $post['edu_semestr_subject_category_times']);
                 if (!isJsonMK($post['edu_semestr_subject_category_times'])) {
-                    $json_errors['edu_semestr_subject_category_times'] = [_e('Must be Json')];
+                    $errors[] = [_e('Must be Json')];
                 } else {
                     $model->edu_semestr_subject_category_times = $post['edu_semestr_subject_category_times'];
                     $auditory_time = 0;
-                    foreach (json_decode($post['edu_semestr_subject_category_times'])
-                             as $edu_semestr_subject_category_times_key => $edu_semestr_subject_category_times_value) {
-                        if (SubjectCategory::find()
-                            ->where([
-                                'id' => $edu_semestr_subject_category_times_key
-                            ])
-                            ->exists()
-                        ) {
-                            $auditory_time += $edu_semestr_subject_category_times_value;
+                    foreach (json_decode($post['edu_semestr_subject_category_times']) as $subject_category_key => $subject_category_value) {
+                        $subjectCategory = SubjectCategory::findOne($subject_category_key);
+                        if ($subjectCategory) {
+                            if ($subjectCategory->type == SubjectCategory::AUDITORY_TIME) {
+                                $auditory_time += $subject_category_value;
+                            }
                         } else {
-                            $errors[] = ['Subject Category' => [_e('Subject Category id = '. $edu_semestr_subject_category_times_key .' not found')]];
+                            $errors[] = [_e('Category time not found')];
                         }
                     }
                     $model->auditory_time = $auditory_time;
+                    if ($model->auditory_time != $model->credit * self::CREDIT_TIME) {
+                        $errors[] = [_e("Total hours do not equal credit hours.")];
+                    }
                 }
             }
 
 
-            if ($model->save()) {
+            if ($model->save(false)) {
                 if (isset($post['name'])) {
                     if (isset($post['description'])) {
                         Translate::updateTranslate($post['name'], $model->tableName(), $model->id, $post['description']);
                     } else {
                         Translate::updateTranslate($post['name'], $model->tableName(), $model->id);
                     }
-                }
-                if (count($errors) == 0) {
-                    $transaction->commit();
-                    return true;
-                } else {
-                    $transaction->rollBack();
-                    return simplify_errors($errors);
                 }
             } else {
                 $transaction->rollBack();
@@ -675,6 +623,14 @@ class Subject extends \yii\db\ActiveRecord
         } else {
             $transaction->rollBack();
             return double_errors($errors, $has_error['errors']);
+        }
+
+        if (count($errors) == 0) {
+            $transaction->commit();
+            return true;
+        } else {
+            $transaction->rollBack();
+            return simplify_errors($errors);
         }
     }
 
