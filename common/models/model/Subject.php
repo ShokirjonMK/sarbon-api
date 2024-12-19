@@ -490,18 +490,20 @@ class Subject extends \yii\db\ActiveRecord
             }
 
             $auditory_time = 0;
+            $all_time = 0;
             foreach (json_decode($post['edu_semestr_subject_category_times']) as $subject_category_key => $subject_category_value) {
                 $subjectCategory = SubjectCategory::findOne($subject_category_key);
                 if ($subjectCategory) {
                     if ($subjectCategory->type == SubjectCategory::AUDITORY_TIME) {
                         $auditory_time += $subject_category_value;
                     }
+                    $all_time += $subject_category_value;
                 } else {
                     $errors[] = [_e('Category time not found')];
                 }
             }
             $model->auditory_time = $auditory_time;
-            if ($model->auditory_time != $model->credit * self::CREDIT_TIME) {
+            if ($all_time != $model->credit * self::CREDIT_TIME) {
                 $errors[] = [_e("Total hours do not equal credit hours.")];
             }
 
@@ -590,18 +592,20 @@ class Subject extends \yii\db\ActiveRecord
                 } else {
                     $model->edu_semestr_subject_category_times = $post['edu_semestr_subject_category_times'];
                     $auditory_time = 0;
+                    $all_time = 0;
                     foreach (json_decode($post['edu_semestr_subject_category_times']) as $subject_category_key => $subject_category_value) {
                         $subjectCategory = SubjectCategory::findOne($subject_category_key);
                         if ($subjectCategory) {
                             if ($subjectCategory->type == SubjectCategory::AUDITORY_TIME) {
                                 $auditory_time += $subject_category_value;
                             }
+                            $all_time += $subject_category_value;
                         } else {
                             $errors[] = [_e('Category time not found')];
                         }
                     }
                     $model->auditory_time = $auditory_time;
-                    if ($model->auditory_time != $model->credit * self::CREDIT_TIME) {
+                    if ($all_time != $model->credit * self::CREDIT_TIME) {
                         $errors[] = [_e("Total hours do not equal credit hours.")];
                     }
                 }
