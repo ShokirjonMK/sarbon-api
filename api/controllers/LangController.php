@@ -35,9 +35,6 @@ class LangController extends ApiActiveController
             // ->andWhere(['tr.tabel_name' => 'faculty'])
             ->andFilterWhere(['like', 'tr.name', Yii::$app->request->get('query')]);
 
-
-        //        dd($query);
-
         // filter
         $query = $this->filterAll($query, $model);
 
