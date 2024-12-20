@@ -1,6 +1,7 @@
 <?php
 
 $controllers = [
+    'passport-get-data',
     'room-ip',
     'student-group',
     'timetable-reason',
@@ -200,6 +201,10 @@ $routes = [
     // Department type list
     'GET <lang:\w{2}>/departments/types' => 'department/types',
     'GET <lang:\w{2}>/departments/parents' => 'department/parent',
+
+    // passport-get-data
+    'GET <lang:\w{2}>/passport-get-data/ik' => 'passport-get-data/ik',
+    'GET <lang:\w{2}>/passport-get-data/pinfl' => 'passport-get-data/pinfl',
 
     // Faculty UserAccess fakultitetga user biriktirish
     'POST <lang:\w{2}>/faculties/user-access' => 'faculty/user-access',

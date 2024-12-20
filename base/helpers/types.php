@@ -182,6 +182,23 @@ function weight_type_list($key = false)
     return $array;
 }
 
+function isDate($date, $format = 'Y-m-d') {
+    $dateTime = DateTime::createFromFormat($format, $date);
+    return $dateTime && $dateTime->format($format) === $date;
+}
+
+function isValidPassportSeries($series) {
+    return preg_match('/^[A-Z]{2}$/', $series);
+}
+
+function isValidPassportNumber($number) {
+    return preg_match('/^\d{7}$/', $number);
+}
+
+function isValidPassportPin($pin) {
+    return preg_match('/^\d{14}$/', $pin);
+}
+
 // Product special types
 function product_special_types($key = false)
 {
