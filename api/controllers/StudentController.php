@@ -669,14 +669,14 @@ class  StudentController extends ApiActiveController
         $std = User::find()->orderBy(['id' => SORT_DESC])->one();
 //        $count = $users + 10001;
         if ($std) {
-            $count = $std->id + 100001 + 1;
+            $count = $std->id + 10000 + 1;
         } else {
-            $count = 100001 + 1;
+            $count = 10000 + 1;
         }
 
-        $post['username'] = 'utas-std-' . $count;
+        $post['username'] = 'sarbon-std-' . $count;
         if (!(isset($post['email']))) {
-            $post['email'] = 'utas-std' . $count . '@utas.uz';
+            $post['email'] = 'sarbon-std' . $count . '@sarbon.uz';
         } else {
             $userEmail = User::findOne([
                 'email' => $post['email']

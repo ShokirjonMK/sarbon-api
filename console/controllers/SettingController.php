@@ -32,7 +32,7 @@ class SettingController extends Controller
     public function actionStudentsImport()
     {
         $errors = [];
-        $inputFileName = __DIR__ . '/excels/talabalar1.xlsx';
+        $inputFileName = __DIR__ . '/excels/std.xlsx';
         $spreadsheet = IOFactory::load($inputFileName);
         $data = $spreadsheet->getActiveSheet()->toArray();
 
@@ -44,36 +44,36 @@ class SettingController extends Controller
                 $role = 'student';
                 if (isset($group)) {
 
-                    $model = new \api\resources\User();
-                    $user = self::studentLogin();
-                    $model->username = $user['username'];
-                    $model->email= $user['email'];
-                    $password = _passwordMK();
-                    $model->password_hash = \Yii::$app->security->generatePasswordHash($password);
-                    $model->auth_key = \Yii::$app->security->generateRandomString(20);
-                    $model->password_reset_token = null;
-                    $model->access_token = \Yii::$app->security->generateRandomString();
-                    $model->access_token_time = time();
-                    $model->status = 10;
-                    $model->save(false);
+//                    $model = new \api\resources\User();
+//                    $user = self::studentLogin();
+//                    $model->username = $user['username'];
+//                    $model->email= $user['email'];
+//                    $password = _passwordMK();
+//                    $model->password_hash = \Yii::$app->security->generatePasswordHash($password);
+//                    $model->auth_key = \Yii::$app->security->generateRandomString(20);
+//                    $model->password_reset_token = null;
+//                    $model->access_token = \Yii::$app->security->generateRandomString();
+//                    $model->access_token_time = time();
+//                    $model->status = 10;
+//                    $model->save(false);
+////
+//                    $model->savePassword($password, $model->id);
 //
-                    $model->savePassword($password, $model->id);
-
-                    $profile = new Profile();
-                    $profile->user_id = $model->id;
-                    $profile->passport_pin = $dataOne[0];
-                    $profile->save(false);
-
-                    $student = new Student();
-                    $student->group_id = $group->id;
-                    $student->user_id = $model->id;
-                    $student->type = 1;
-                    $student->status = 10;
-                    $student->save(false);
-
-                    $auth = \Yii::$app->authManager;
-                    $authorRole = $auth->getRole($role);
-                    $auth->assign($authorRole, $model->id);
+//                    $profile = new Profile();
+//                    $profile->user_id = $model->id;
+//                    $profile->passport_pin = $dataOne[0];
+//                    $profile->save(false);
+//
+//                    $student = new Student();
+//                    $student->group_id = $group->id;
+//                    $student->user_id = $model->id;
+//                    $student->type = 1;
+//                    $student->status = 10;
+//                    $student->save(false);
+//
+//                    $auth = \Yii::$app->authManager;
+//                    $authorRole = $auth->getRole($role);
+//                    $auth->assign($authorRole, $model->id);
 
                 } else {
                     $errors[] = $dataOne[1];
@@ -93,9 +93,9 @@ class SettingController extends Controller
         $result = [];
         $std = \api\resources\User::find()->orderBy(['id' => SORT_DESC])->one();
         if ($std) {
-            $count = $std->id + 100 + 1;
+            $count = $std->id + 10000 + 1;
         } else {
-            $count = 100 + 1;
+            $count = 10000 + 1;
         }
 
         $result['username'] = 'sarbon-std-' . $count;
@@ -131,27 +131,27 @@ class SettingController extends Controller
                 $response = curl_exec($ch);
                 $response = json_decode($response, true);
                 curl_close($ch);
-                $photoBase64 = $response['data']['photo'] ?? null;
+//                $photoBase64 = $response['data']['photo'] ?? null;
                 $image = null;
 
-                if ($photoBase64) {
-                    // Rasmni dekodlash
-                    $photoData = base64_decode($photoBase64);
-
-                    if (!file_exists(\Yii::getAlias('@api/web/storage/std_image'))) {
-                        mkdir(\Yii::getAlias('@api/web/storage/std_image'), 0777, true);
-                    }
-
-                    // Saqlash uchun fayl nomini va yo‘lini aniqlash
-                    $fileName = $profile->passport_pin.'_ik.jpg'; // Fayl nomini kerakli tarzda o'zgartirishingiz mumkin
-                    $filePath = \Yii::getAlias('@api/web/storage/std_image/') . $fileName;
-                    $image = 'storage/std_image/'.$fileName;
-
-                    // Faylni papkaga saqlash
-                    file_put_contents($filePath, $photoData);
-
-                    echo $b++."\n";
-                }
+//                if ($photoBase64) {
+//                    // Rasmni dekodlash
+//                    $photoData = base64_decode($photoBase64);
+//
+//                    if (!file_exists(\Yii::getAlias('@api/web/storage/std_image'))) {
+//                        mkdir(\Yii::getAlias('@api/web/storage/std_image'), 0777, true);
+//                    }
+//
+//                    // Saqlash uchun fayl nomini va yo‘lini aniqlash
+//                    $fileName = $profile->passport_pin.'_ik.jpg'; // Fayl nomini kerakli tarzda o'zgartirishingiz mumkin
+//                    $filePath = \Yii::getAlias('@api/web/storage/std_image/') . $fileName;
+//                    $image = 'storage/std_image/'.$fileName;
+//
+//                    // Faylni papkaga saqlash
+//                    file_put_contents($filePath, $photoData);
+//
+//                    echo $b++."\n";
+//                }
 
                 $pin = $response['data']['pinfl'];
                 $seria = $response['data']['docSeria'];
@@ -221,7 +221,6 @@ class SettingController extends Controller
 
             // Faylni papkaga saqlash
             file_put_contents($filePath, $photoData);
-
         }
 
         $pin = $photoBase64 = $response['data']['pinfl'];

@@ -1290,14 +1290,14 @@ class ExcelController extends Controller
         $result = [];
         $std = User::find()->orderBy(['id' => SORT_DESC])->one();
         if ($std) {
-            $count = $std->id + 100001 + 1;
+            $count = $std->id + 10000 + 1;
         } else {
-            $count = 100001 + 1;
+            $count = 10000 + 1;
         }
 
-        $result['username'] = 'utas-std-' . $count;
+        $result['username'] = 'sarbon-std-' . $count;
         if (!(isset($post['email']))) {
-            $result['email'] = 'utas-std' . $count . '@utas.uz';
+            $result['email'] = 'sarbon-std' . $count . '@sarbon.uz';
         }
         return $result;
     }
