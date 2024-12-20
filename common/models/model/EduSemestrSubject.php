@@ -625,8 +625,8 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
         $transaction = Yii::$app->db->beginTransaction();
         $errors = [];
 
-        EduSemestrSubjectCategoryTime::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id]);
-        EduSemestrExamsType::updateAll(['status' => 0 , 'is_deleted' => 1], ['edu_semestr_subject_id' => $model->id]);
+        EduSemestrSubjectCategoryTime::updateAll(['status' => 0], ['edu_semestr_subject_id' => $model->id]);
+        EduSemestrExamsType::updateAll(['status' => 0], ['edu_semestr_subject_id' => $model->id]);
         $model->is_deleted = 1;
         $model->save(false);
 
