@@ -2,11 +2,13 @@
 
 namespace console\controllers;
 
+use common\models\model\EduSemestr;
 use common\models\model\Group;
 
 use common\models\model\PasswordEncrypts;
 use common\models\model\Profile;
 use common\models\model\Student;
+use common\models\model\StudentGroup;
 use common\models\User;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -17,16 +19,51 @@ class SettingController extends Controller
 {
     public function actionDel()
     {
-        $students = Student::find()
-            ->all();
+        $transaction = \Yii::$app->db->beginTransaction();
+        $errors = [];
 
+        $students = Student::find()
+            ->where(['is_deleted' => 0 , 'status' => 10])
+            ->all();
         foreach ($students as $student) {
-            Profile::deleteAll(['user_id' => $student->user_id]);
-            PasswordEncrypts::deleteAll(['user_id' => $student->user_id]);
-            $user = $student->user;
-            $student->delete();
-            $user->delete();
+            $group = Group::findOne($student->group_id);
+            if ($group) {
+                $eduSemestrs = EduSemestr::find()
+                    ->where(['edu_plan_id' => $group->edu_plan_id , 'is_deleted' => 0])
+                    ->orderBy('semestr_id asc')
+                    ->all();
+                foreach ($eduSemestrs as $eduSemestr) {
+                    $new = new StudentGroup();
+                    $new->student_id = $student->id;
+                    $new->group_id = $group->id;
+                    $new->edu_year_id = $eduSemestr->edu_year_id;
+                    $new->edu_plan_id = $eduSemestr->edu_plan_id;
+                    $new->edu_semestr_id = $eduSemestr->id;
+                    $new->edu_form_id = $eduSemestr->edu_form_id;
+                    $new->semestr_id = $eduSemestr->semestr_id;
+                    $new->course_id = $eduSemestr->course_id;
+                    $new->faculty_id = $eduSemestr->faculty_id;
+                    $new->direction_id = $eduSemestr->direction_id;
+                    $new->save(false);
+                    if ($eduSemestr->status == 1) {
+                        $student->faculty_id = $eduSemestr->faculty_id;
+                        $student->direction_id = $eduSemestr->direction_id;
+                        $student->course_id = $eduSemestr->course_id;
+                        $student->edu_year_id = $eduSemestr->edu_year_id;
+                        $student->edu_type_id = $eduSemestr->edu_type_id;
+                        $student->edu_form_id = $eduSemestr->edu_form_id;
+                        $student->edu_lang_id = $group->language_id;
+                        $student->edu_plan_id = $group->edu_plan_id;
+                        $student->is_contract = 1;
+                        $student->save(false);
+                        break;
+                    }
+                }
+            }
         }
+
+        $transaction->commit();
+        dd(232323);
     }
 
     public function actionStudentsImport()
