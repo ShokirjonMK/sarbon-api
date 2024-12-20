@@ -3,6 +3,7 @@
 namespace console\controllers;
 
 use common\models\model\EduSemestr;
+use common\models\model\EduSemestrSubject;
 use common\models\model\Group;
 
 use common\models\model\PasswordEncrypts;
@@ -12,6 +13,7 @@ use common\models\model\StudentGroup;
 use common\models\model\StudentMark;
 use common\models\model\StudentSemestrSubject;
 use common\models\model\StudentSemestrSubjectVedomst;
+use common\models\model\SubjectVedomst;
 use common\models\User;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Yii;
@@ -21,6 +23,33 @@ use yii\console\Controller;
 class SettingController extends Controller
 {
 
+    public function actionEduVedomst()
+    {
+        $subjects = EduSemestrSubject::find()
+            ->where([
+                'status' => 1,
+                'is_deleted' => 0,
+            ])
+            ->all();
+        foreach ($subjects as $subject) {
+            for ($i = 1; $i <= 3; $i++) {
+                $vedomst = SubjectVedomst::findOne([
+                    'edu_semestr_subject_id' => $subject->id,
+                    'edu_semestr_id' => $subject->edu_semestr_id,
+                    'edu_plan_id' => $subject->eduSemestr->edu_plan_id,
+                    'type' => $i
+                ]);
+                if (!$vedomst) {
+                    $new = new SubjectVedomst();
+                    $new->edu_semestr_subject_id = $subject->id;
+                    $new->edu_semestr_id = $subject->edu_semestr_id;
+                    $new->edu_plan_id = $subject->eduSemestr->edu_plan_id;
+                    $new->type = $i;
+                    $new->save(false);
+                }
+            }
+        }
+    }
 
     public function actionStdG()
     {
