@@ -74,10 +74,6 @@ class StudentMark extends \yii\db\ActiveRecord
             ],
             [
                 [
-                    'exam_control_id',
-                    'exam_id',
-                    'exam_control_student_id',
-                    'exam_student_id',
                     'exam_type_id',
                     'edu_semestr_exams_type_id',
                     'student_semestr_subject_vedomst_id',
@@ -122,10 +118,6 @@ class StudentMark extends \yii\db\ActiveRecord
             [['direction_id'], 'exist', 'skipOnError' => true, 'targetClass' => Direction::className(), 'targetAttribute' => ['direction_id' => 'id']],
             [['semestr_id'], 'exist', 'skipOnError' => true, 'targetClass' => Semestr::className(), 'targetAttribute' => ['semestr_id' => 'id']],
             [['course_id'], 'exist', 'skipOnError' => true, 'targetClass' => Course::className(), 'targetAttribute' => ['course_id' => 'id']],
-            [['exam_control_id'], 'exist', 'skipOnError' => true, 'targetClass' => ExamControl::className(), 'targetAttribute' => ['exam_control_id' => 'id']],
-            [['exam_control_student_id'], 'exist', 'skipOnError' => true, 'targetClass' => ExamControlStudent::className(), 'targetAttribute' => ['exam_control_student_id' => 'id']],
-            [['exam_id'], 'exist', 'skipOnError' => true, 'targetClass' => Exam::className(), 'targetAttribute' => ['exam_id' => 'id']],
-            [['exam_student_id'], 'exist', 'skipOnError' => true, 'targetClass' => ExamStudent::className(), 'targetAttribute' => ['exam_student_id' => 'id']],
             [['student_semestr_subject_vedomst_id'], 'exist', 'skipOnError' => true, 'targetClass' => StudentSemestrSubjectVedomst::className(), 'targetAttribute' => ['student_semestr_subject_vedomst_id' => 'id']],
 
             ['ball' , 'validateBall'],
