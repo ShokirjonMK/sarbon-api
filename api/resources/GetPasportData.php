@@ -42,6 +42,7 @@ class GetPasportData
             ->send();
         if ($response->isOk) {
             $responseData = $response->data;
+            dd($responseData);
             $passport = $responseData['data']['info']['data'];
             $data = [
                 'first_name' => $passport['name'],
