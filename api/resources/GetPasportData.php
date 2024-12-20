@@ -87,7 +87,7 @@ class GetPasportData
 
         $client = new Client();
         $response = $client->createRequest()
-            ->setMethod('POST')
+            ->setMethod('GET')
             ->setUrl($url)
             ->setHeaders([
                 'Content-Type' => 'application/json',
