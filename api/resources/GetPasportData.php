@@ -67,31 +67,6 @@ class GetPasportData
 
     public static function pinfl($pin)
     {
-
-//        $url = 'https://subsidiya.idm.uz/api/applicant/get-photo';
-//
-//        $data = json_encode([
-//            'pinfl' => 52111045840018
-//        ]);
-//
-//        $ch = curl_init();
-//        curl_setopt($ch, CURLOPT_URL, $url);
-//        curl_setopt($ch, CURLOPT_POST, 1);
-//        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-//            'Content-Type: application/json',
-//            'Authorization: Basic ' . base64_encode('ikbol:ikbol123321')
-//        ]);
-//
-//        $response = curl_exec($ch);
-//        $response = json_decode($response, true);
-//        curl_close($ch);
-//
-//        dd($response['data']);
-
-
-
         $transaction = Yii::$app->db->beginTransaction();
         $errors = [];
 
@@ -110,20 +85,22 @@ class GetPasportData
             'pinfl' => (int)$pin
         ]);
 
-        $client = new Client();
-        $response = $client->createRequest()
-            ->setMethod('POST')
-            ->setUrl($url)
-            ->setHeaders([
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Basic ' . base64_encode('ikbol:ikbol123321'),
-            ])
-            ->setContent(json_encode($data))
-            ->send();
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: Basic ' . base64_encode('ikbol:ikbol123321')
+        ]);
 
+        $response = curl_exec($ch);
+        $response = json_decode($response, true);
+        curl_close($ch);
 
-        if ($response->isOk) {
-            $responseData = $response->data;
+        if ($response['data']) {
+            $responseData = $response['data'];
             dd($responseData);
             $passport = $responseData['data']['info']['data'];
             $data = [
