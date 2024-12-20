@@ -17,7 +17,7 @@ use yii\console\Controller;
 
 class SettingController extends Controller
 {
-    public function actionDel()
+    public function actionDel1()
     {
         $transaction = \Yii::$app->db->beginTransaction();
         $errors = [];
