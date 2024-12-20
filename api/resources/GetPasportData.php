@@ -42,7 +42,6 @@ class GetPasportData
             ->send();
         if ($response->isOk) {
             $responseData = $response->data;
-            dd($responseData);
             $passport = $responseData['data']['info']['data'];
             $data = [
                 'first_name' => $passport['name'],
@@ -55,6 +54,7 @@ class GetPasportData
                 'passport_given_date' => date("Y-m-d" , strtotime($passport['given_date'])),
                 'passport_given_by' => $passport['given_place'],
                 'gender' => $passport['gender'],
+                'address' => $passport['address'],
             ];
             $transaction->commit();
             return ['is_ok' => true , 'data' => $data];
