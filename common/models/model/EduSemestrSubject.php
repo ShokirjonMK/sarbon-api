@@ -449,6 +449,7 @@ class EduSemestrSubject extends \yii\db\ActiveRecord
             $subjectSillabus = Subject::findOne(['id' => $post['subject_id'] ?? null]);
             $all_time = 0;
             $max_ball = 0;
+            $auditory_time = 0;
 
             $eduSemestr = $model->eduSemestr;
 
