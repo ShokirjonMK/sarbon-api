@@ -9,14 +9,194 @@ use common\models\model\PasswordEncrypts;
 use common\models\model\Profile;
 use common\models\model\Student;
 use common\models\model\StudentGroup;
+use common\models\model\StudentMark;
+use common\models\model\StudentSemestrSubject;
+use common\models\model\StudentSemestrSubjectVedomst;
 use common\models\User;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-
+use Yii;
 use yii\console\Controller;
 
 
 class SettingController extends Controller
 {
+
+
+    public function actionStdG()
+    {
+        $transaction = Yii::$app->db->beginTransaction();
+        $errors = [];
+
+        $studentGroups = StudentGroup::find()
+            ->where([
+                'is_deleted' => 0,
+                'status' => 1
+            ])
+            ->all();
+
+        foreach ($studentGroups as $studentGroup) {
+            $eduSemestr = EduSemestr::findOne($studentGroup->edu_semestr_id);
+            $eduSemestrSubjects = $eduSemestr->eduSemestrSubjects;
+            $result = self::studentSemestrSubject($studentGroup , $eduSemestrSubjects);
+            if (!$result['is_ok']) {
+                foreach ($result['errors'] as $err) {
+                    $errors[] = $err;
+                }
+            }
+        }
+
+        if (count($errors) == 0) {
+            $transaction->commit();
+            echo "1111";
+        } else {
+            $transaction->rollBack();
+            dd($errors);
+            echo "2222 \n";
+        }
+    }
+
+
+    public static function studentSemestrSubject($model , $eduSemestrSubjects)
+    {
+        $errors = [];
+        foreach ($eduSemestrSubjects as $subject) {
+
+            $isStudentSubject = StudentSemestrSubject::findOne([
+                'edu_semestr_subject_id' => $subject->id,
+                'student_id' => $model->student_id,
+                'is_deleted' => 0
+            ]);
+
+            $eduSemestrSubjectExamTypes = $subject->eduSemestrExamsTypes;
+
+            if (!$isStudentSubject) {
+                $studentSemestrSubject = new StudentSemestrSubject();
+                $studentSemestrSubject->edu_plan_id = $model->edu_plan_id;
+                $studentSemestrSubject->edu_semestr_id = $model->edu_semestr_id;
+                $studentSemestrSubject->edu_semestr_subject_id = $subject->id;
+                $studentSemestrSubject->student_id = $model->student_id;
+                $studentSemestrSubject->student_user_id = $model->student->user_id;
+                $studentSemestrSubject->faculty_id = $model->faculty_id;
+                $studentSemestrSubject->direction_id = $model->direction_id;
+                $studentSemestrSubject->edu_form_id = $model->edu_form_id;
+                $studentSemestrSubject->edu_year_id = $model->edu_year_id;
+                $studentSemestrSubject->course_id = $model->eduSemestr->course_id;
+                $studentSemestrSubject->semestr_id = $model->semestr_id;
+                if (!$studentSemestrSubject->validate()) {
+                    $errors[] = [ 'studentSemestrSubject'];
+                } else {
+                    $studentSemestrSubject->save(false);
+                    $studentVedomst = new StudentSemestrSubjectVedomst();
+                    $studentVedomst->student_semestr_subject_id = $studentSemestrSubject->id;
+                    $studentVedomst->subject_id = $subject->subject_id;
+                    $studentVedomst->edu_year_id = $model->edu_year_id;
+                    $studentVedomst->semestr_id = $model->semestr_id;
+                    $studentVedomst->student_id = $model->student_id;
+                    $studentVedomst->student_user_id = $studentSemestrSubject->student_user_id;
+                    $studentVedomst->group_id = $model->group_id;
+                    $studentVedomst->vedomst = 1;
+                    if (!$studentVedomst->validate()) {
+                        $errors[] = ['student Vedomst validate'];
+                    } else {
+                        $studentVedomst->save(false);
+                        foreach ($eduSemestrSubjectExamTypes as $eduSemestrSubjectExamType) {
+                            $studentMark = new StudentMark();
+                            $studentMark->edu_semestr_exams_type_id = $eduSemestrSubjectExamType->id;
+                            $studentMark->exam_type_id = $eduSemestrSubjectExamType->exams_type_id;
+                            $studentMark->group_id = $model->group_id;
+                            $studentMark->student_id = $model->student_id;
+                            $studentMark->student_user_id = $studentVedomst->student_user_id;
+                            $studentMark->max_ball = $eduSemestrSubjectExamType->max_ball;
+                            $studentMark->edu_semestr_subject_id = $subject->id;
+                            $studentMark->subject_id = $subject->subject_id;
+                            $studentMark->edu_plan_id = $model->edu_plan_id;
+                            $studentMark->edu_semestr_id = $model->edu_semestr_id;
+                            $studentMark->faculty_id = $model->faculty_id;
+                            $studentMark->direction_id = $model->direction_id;
+                            $studentMark->semestr_id = $model->semestr_id;
+                            $studentMark->course_id = $studentSemestrSubject->course_id;
+                            $studentMark->vedomst = 1;
+                            $studentMark->student_semestr_subject_vedomst_id = $studentVedomst->id;
+                            $studentMark->save(false);
+//                            if (!$studentMark->validate()) {
+//                                $errors[] = ['Student Mark Validate Errors'];
+//                            }
+                        }
+                    }
+                }
+
+            } else {
+
+                $queryVedomst = StudentSemestrSubjectVedomst::findOne([
+                    'subject_id' => $subject->subject_id,
+                    'student_semestr_subject_id' => $isStudentSubject->id,
+                    'is_deleted' => 0,
+                    'vedomst' => 1,
+                ]);
+
+                $studentGroup = StudentGroup::findOne([
+                    'edu_semestr_id' => $isStudentSubject->edu_semestr_id,
+                    'student_id' => $isStudentSubject->student_id,
+                    'status' => 1,
+                    'is_deleted' => 0
+                ]);
+
+                if ($queryVedomst) {
+
+                    if ($studentGroup) {
+                        $queryVedomst->group_id = $studentGroup->group_id;
+                        $queryVedomst->save(false);
+                    }
+
+                    foreach ($eduSemestrSubjectExamTypes as $eduSemestrSubjectExamType) {
+                        $qStudentMark = StudentMark::findOne([
+                            'student_semestr_subject_vedomst_id' => $queryVedomst->id,
+                            'edu_semestr_exams_type_id' => $eduSemestrSubjectExamType->id,
+                            'is_deleted' => 0,
+                            'vedomst' => 1
+                        ]);
+                        if (!$qStudentMark) {
+                            $studentMark = new StudentMark();
+                            $studentMark->edu_semestr_exams_type_id = $eduSemestrSubjectExamType->id;
+                            $studentMark->exam_type_id = $eduSemestrSubjectExamType->exams_type_id;
+                            $studentMark->group_id = $model->group_id;
+                            $studentMark->student_id = $model->student_id;
+                            $studentMark->student_user_id = $queryVedomst->student_user_id;
+                            $studentMark->max_ball = $eduSemestrSubjectExamType->max_ball;
+                            $studentMark->edu_semestr_subject_id = $subject->id;
+                            $studentMark->subject_id = $subject->subject_id;
+                            $studentMark->edu_plan_id = $model->edu_plan_id;
+                            $studentMark->edu_semestr_id = $model->edu_semestr_id;
+                            $studentMark->faculty_id = $model->faculty_id;
+                            $studentMark->direction_id = $model->direction_id;
+                            $studentMark->semestr_id = $model->semestr_id;
+                            $studentMark->course_id = $isStudentSubject->course_id;
+                            $studentMark->vedomst = 1;
+                            $studentMark->student_semestr_subject_vedomst_id = $queryVedomst->id;
+                            if (!$studentMark->validate()) {
+                                $errors[] = ['Student Mark Validate Errors'];
+                            } else {
+                                $studentMark->save(false);
+                            }
+                        } else {
+                            $qStudentMark->group_id = $queryVedomst->group_id;
+                            $qStudentMark->save(false);
+                        }
+                    }
+                }
+            }
+        }
+        if (count($errors) == 0) {
+            return ['is_ok' => true];
+        }
+        return ['is_ok' => false , 'errors' => $errors];
+    }
+
+
+
+
+
+
     public function actionDel1()
     {
         $transaction = \Yii::$app->db->beginTransaction();
