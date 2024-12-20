@@ -100,20 +100,18 @@ class GetPasportData
         curl_close($ch);
 
         if ($response['data']) {
-            $responseData = $response['data'];
-            dd($responseData);
-            $passport = $responseData['data']['info']['data'];
+            $passport = $response['data'];
             $data = [
-                'first_name' => $passport['name'],
-                'last_name' => $passport['sur_name'],
-                'middle_name' => $passport['patronymic_name'],
-                'passport_number' => 12121,
-                'passport_serial' => 2121,
+                'first_name' => $passport['nameLatin'],
+                'last_name' => $passport['surnameLatin'],
+                'middle_name' => $passport['patronymLatin'],
+                'passport_number' => $passport['docNumber'],
+                'passport_serial' => $passport['docSeria'],
                 'passport_pin' => (string)$passport['pinfl'],
-                'passport_issued_date' => date("Y-m-d" , strtotime($passport['expiration_date'])),
-                'passport_given_date' => date("Y-m-d" , strtotime($passport['given_date'])),
-                'passport_given_by' => $passport['given_place'],
-                'gender' => $passport['gender'],
+                'passport_issued_date' => $passport['docDateBegin'],
+                'passport_given_date' => $passport['docDateEnd'],
+                'passport_given_by' => $passport['docGivePlace'],
+                'gender' => $passport['sex'],
             ];
             $transaction->commit();
             return ['is_ok' => true , 'data' => $data];
