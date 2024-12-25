@@ -620,11 +620,11 @@ class Timetable extends \yii\db\ActiveRecord
             $groups = json_decode(str_replace("'", "", $post['groups']));
             $groups->id = array_unique($groups->id);
             $subject_categoryId = $post['subject_category_id'];
-            if ($subject_categoryId != self::LECTURE) {
-                if (count($groups->id) != 1) {
-                    $errors[] = ['groups' => _e('You cannot attach multiple groups.')];
-                }
-            }
+//            if ($subject_categoryId != self::LECTURE) {
+//                if (count($groups->id) != 1) {
+//                    $errors[] = ['groups' => _e('You cannot attach multiple groups.')];
+//                }
+//            }
             if ($subject_categoryId == self::LECTURE && $post['two_group'] == 1) {
                 $errors[] = ['subject_category_id' => _e('In the lecture class, the group is not divided.')];
             }

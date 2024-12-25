@@ -189,70 +189,70 @@ class TimetableDate extends \yii\db\ActiveRecord
 
     public function validRoom($attribute, $params)
     {
-        $model = new TimetableDate();
-        if ($this->two_group == 0) {
-            $query = $model->find()
-                ->where([
-                    'date' => $this->date,
-                    'room_id' => $this->room_id,
-                    'para_id' => $this->para_id,
-                    'status' => 1,
-                    'is_deleted' => 0
-                ])
-                ->andWhere(['<>' , 'ids_id' , $this->ids_id])
-                ->exists();
-            if ($query) {
-                $this->addError($attribute, _e('This room is assigned a lesson.'));
-            }
-        } else {
-            $query = $model->find()
-                ->where([
-                    'date' => $this->date,
-                    'room_id' => $this->room_id,
-                    'para_id' => $this->para_id,
-                    'status' => 1,
-                    'is_deleted' => 0
-                ])
-                ->exists();
-
-            if ($query) {
-                $this->addError($attribute, _e('This room is assigned a lesson.'));
-            }
-        }
+//        $model = new TimetableDate();
+//        if ($this->two_group == 0) {
+//            $query = $model->find()
+//                ->where([
+//                    'date' => $this->date,
+//                    'room_id' => $this->room_id,
+//                    'para_id' => $this->para_id,
+//                    'status' => 1,
+//                    'is_deleted' => 0
+//                ])
+//                ->andWhere(['<>' , 'ids_id' , $this->ids_id])
+//                ->exists();
+//            if ($query) {
+//                $this->addError($attribute, _e('This room is assigned a lesson.'));
+//            }
+//        } else {
+//            $query = $model->find()
+//                ->where([
+//                    'date' => $this->date,
+//                    'room_id' => $this->room_id,
+//                    'para_id' => $this->para_id,
+//                    'status' => 1,
+//                    'is_deleted' => 0
+//                ])
+//                ->exists();
+//
+//            if ($query) {
+//                $this->addError($attribute, _e('This room is assigned a lesson.'));
+//            }
+//        }
 
     }
 
     public function validTeacher($attribute, $params)
     {
-        $model = new TimetableDate();
-        if ($this->two_group == 0) {
-            $query = $model->find()
-                ->where([
-                    'date' => $this->date,
-                    'user_id' => $this->user_id,
-                    'para_id' => $this->para_id,
-                    'status' => 1,
-                    'is_deleted' => 0
-                ])
-                ->andWhere(['<>' , 'ids_id' , $this->ids_id])
-                ->exists();
-            if ($query) {
-                $this->addError($attribute, _e('The teacher is busy at this hour.'));
-            }
-        } else {
-            $query = $model->find()
-                ->where([
-                    'date' => $this->date,
-                    'user_id' => $this->user_id,
-                    'para_id' => $this->para_id,
-                    'status' => 1,
-                    'is_deleted' => 0
-                ])
-                ->exists();
-            if ($query) {
-                $this->addError($attribute, _e('The teacher is busy at this hour.'));
-            }
-        }
+//        $model = new TimetableDate();
+//        if ($this->two_group == 0) {
+//            $query = $model->find()
+//                ->where([
+//                    'date' => $this->date,
+//                    'user_id' => $this->user_id,
+//                    'para_id' => $this->para_id,
+//                    'status' => 1,
+//                    'is_deleted' => 0
+//                ])
+//                ->andWhere(['<>' , 'ids_id' , $this->ids_id])
+//                ->exists();
+//            if ($query) {
+//                $this->addError($attribute, _e('The teacher is busy at this hour.'));
+//            }
+//        } else {
+//            $query = $model->find()
+//                ->where([
+//                    'date' => $this->date,
+//                    'user_id' => $this->user_id,
+//                    'para_id' => $this->para_id,
+//                    'status' => 1,
+//                    'is_deleted' => 0
+//                ])
+//                ->exists();
+//            if ($query) {
+//                $this->addError($attribute, _e('The teacher is busy at this hour.'));
+//            }
+//        }
     }
 
     public function validGroup($attribute, $params)
