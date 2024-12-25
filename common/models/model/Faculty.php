@@ -238,7 +238,7 @@ class Faculty extends \yii\db\ActiveRecord
         ]);
         $data['woman'] = BaseGet::studentCount([
             'student.faculty_id' => $this->id,
-            'student.gender' => 0,
+            'student.gender' => 2,
             'student.status' => 10,
             'student.is_deleted' => 0
         ]);
