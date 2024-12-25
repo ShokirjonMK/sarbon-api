@@ -23,6 +23,17 @@ use yii\console\Controller;
 class SettingController extends Controller
 {
 
+    public function actionStudentGender()
+    {
+        $students = Student::find()
+            ->where(['is_deleted' => 0 , 'status' => 10])
+            ->all();
+        foreach ($students as $student) {
+            $profile = $student->profile;
+            $student->gender = $profile->gender;
+            $student->update(false);
+        }
+    }
     public function actionEduVedomst()
     {
         $subjects = EduSemestrSubject::find()

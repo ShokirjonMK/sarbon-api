@@ -217,6 +217,7 @@ class Student extends \yii\db\ActiveRecord
             'edu_type_id',
             'edu_lang_id',
             'edu_plan_id',
+            'gender',
 
             'type',
             //
