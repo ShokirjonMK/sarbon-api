@@ -286,7 +286,7 @@ class SettingController extends Controller
         dd(232323);
     }
 
-    public function actionStudentsImport()
+    public function actionStudentsImport2()
     {
         $errors = [];
         $inputFileName = __DIR__ . '/excels/Sirtqi 2-oqim 26.12.2024.xls';
