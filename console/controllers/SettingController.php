@@ -289,7 +289,7 @@ class SettingController extends Controller
     public function actionStudentsImport()
     {
         $errors = [];
-        $inputFileName = __DIR__ . '/excels/std.xlsx';
+        $inputFileName = __DIR__ . '/excels/Sirtqi 2-oqim 26.12.2024.xls';
         $spreadsheet = IOFactory::load($inputFileName);
         $data = $spreadsheet->getActiveSheet()->toArray();
 
@@ -367,7 +367,7 @@ class SettingController extends Controller
         $url = 'https://subsidiya.idm.uz/api/applicant/get-photo';
 
         $b = 0;
-        $profiles = Profile::find()->all();
+        $profiles = Profile::find()->where(['passport_number' => null])->all();
         foreach ($profiles as $profile) {
 
             if ($profile->passport_pin != null) {
