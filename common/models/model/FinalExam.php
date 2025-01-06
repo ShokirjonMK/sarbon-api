@@ -1456,7 +1456,7 @@ class FinalExam extends \yii\db\ActiveRecord
                         }
                     }
                 } else {
-                    $errors[] = _e('Information cannot be changed.');
+//                    $errors[] = _e('Information cannot be changed.');
                 }
             } else {
                 $errors[] = _e('Status value sent incorrectly.');

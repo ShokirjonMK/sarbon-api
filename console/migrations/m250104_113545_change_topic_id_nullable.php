@@ -11,6 +11,9 @@ class m250104_113545_change_topic_id_nullable extends Migration
      * {@inheritdoc}
      */
     public function safeUp()
+
+
+
     {
         $this->alterColumn('{{%test}}', 'topic_id', $this->integer()->null());
     }
