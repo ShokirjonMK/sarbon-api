@@ -291,10 +291,10 @@ class SettingController extends Controller
         dd(232323);
     }
 
-    public function actionStudentsImport2()
+    public function actionStudentsImport3()
     {
         $errors = [];
-        $inputFileName = __DIR__ . '/excels/Sirtqi 2-oqim 26.12.2024.xls';
+        $inputFileName = __DIR__ . '/excels/newstudent (2).xlsx';
         $spreadsheet = IOFactory::load($inputFileName);
         $data = $spreadsheet->getActiveSheet()->toArray();
 
