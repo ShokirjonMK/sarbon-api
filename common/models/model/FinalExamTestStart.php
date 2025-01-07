@@ -476,13 +476,7 @@ class FinalExamTestStart extends \yii\db\ActiveRecord
 //        }
 
         $parts = explode('.', $getIpMK);
-        if (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '192.168') {
-            return true;
-        } elseif (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '93.188') {
-            return true;
-        } elseif (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '86.62') {
-            return true;
-        } elseif (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '213.230') {
+        if (isset($parts[0], $parts[1]) && $parts[0] . '.' . $parts[1] === '86.62') {
             return true;
         }
 
