@@ -567,7 +567,7 @@ class Timetable extends \yii\db\ActiveRecord
 
     public function getTimeTableDate()
     {
-        return $this->hasMany(TimetableDate::className(), ['timetable_id' => 'id'])->where(['status' => 1, 'is_deleted' => 0]);
+        return $this->hasMany(TimetableDate::className(), ['timetable_id' => 'id'])->where(['is_deleted' => 0]);
     }
 
     public function getAllGroup()
@@ -921,18 +921,17 @@ class Timetable extends \yii\db\ActiveRecord
 
         foreach ($models as $model) {
             $model->is_deleted = 1;
-            $model->save(false);
+            $model->update(false);
             $timeTableDates = $model->timeTableDate;
             if (count($timeTableDates)) {
                 foreach ($timeTableDates as $timeTableDate) {
                     $timeTableDate->is_deleted = 1;
-                    $timeTableDate->save(false);
+                    $timeTableDate->update(false);
 
-                    if (!(isRole('admin') || isRole('edu_admin'))) {
-                        $attend = TimetableAttend::findOne([
-                            'timetable_date_id' =>  $timeTableDate->id,
-                        ]);
-                        if ($attend) {
+                    if (isRole('admin') || isRole('edu_admin')) {
+                        TimetableAttend::updateAll(['status' => 0 , 'is_deleted' => 1] , ['timetable_date_id' =>  $timeTableDate->id]);
+                    } else {
+                        if ($timeTableDate->attend_status == 1) {
                             $errors[] = _e('The date of attendance is available!');
                         }
                     }

@@ -273,7 +273,6 @@ class TimetableController extends ApiActiveController
         $models = Timetable::find()
             ->where([
                 'ids' => $id,
-                'status' => 1,
                 'is_deleted' => 0
             ])->all();
         if (count($models) == 0) {
