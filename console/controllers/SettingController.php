@@ -233,10 +233,6 @@ class SettingController extends Controller
     }
 
 
-
-
-
-
     public function actionDel1()
     {
         $transaction = \Yii::$app->db->beginTransaction();
