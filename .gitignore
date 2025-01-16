@@ -20,4 +20,4 @@ month-logs
 docker/nginx/logs/
 docker/php/bash_history/
 
-docker/mysql/db/
+docker/mysql/db
