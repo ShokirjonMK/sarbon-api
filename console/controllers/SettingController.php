@@ -28,11 +28,10 @@ class SettingController extends Controller
 
     public function actionFinalExam()
     {
-        dd(23232323);
         $finalExams = FinalExam::find()
             ->where([
                 'exams_type_id' => 1,
-                'status' => 3,
+                'status' => [3,4],
                 'exam_type' => 1,
                 'is_deleted' => 0,
                 'faculty_id' => 2
