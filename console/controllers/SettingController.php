@@ -28,6 +28,7 @@ class SettingController extends Controller
 
     public function actionFinalExam()
     {
+        dd(23232323);
         $finalExams = FinalExam::find()
             ->where([
                 'exams_type_id' => 1,
