@@ -113,6 +113,10 @@ class TestController extends ApiController
             $query = $query->andWhere(['lang_id' => $post['lang_id']]);
         }
 
+        if (isset($post['exam_type_id'])) {
+            $query = $query->andWhere(['exam_type_id' => $post['exam_type_id']]);
+        }
+
         $query = $query->all();
 
         if (count($query) == 0) {
