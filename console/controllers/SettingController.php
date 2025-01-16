@@ -4,6 +4,9 @@ namespace console\controllers;
 
 use common\models\model\EduSemestr;
 use common\models\model\EduSemestrSubject;
+use common\models\model\FinalExam;
+use common\models\model\FinalExamTest;
+use common\models\model\FinalExamTestStart;
 use common\models\model\Group;
 
 use common\models\model\PasswordEncrypts;
@@ -22,6 +25,39 @@ use yii\console\Controller;
 
 class SettingController extends Controller
 {
+
+    public function actionFinalExam()
+    {
+        $finalExams = FinalExam::find()
+            ->where([
+                'exams_type_id' => 1,
+                'status' => 3,
+                'exam_type' => 1,
+                'is_deleted' => 0,
+                'faculty_id' => 2
+            ])
+            ->all();
+        foreach ($finalExams as $finalExam) {
+            $tests = FinalExamTest::find()
+                ->where([
+                    'final_exam_id' => $finalExam->id,
+                ])
+                ->all();
+            foreach ($tests as $test) {
+                $starts = FinalExamTestStart::find()
+                    ->where([
+                        'final_exam_test_id' => $test->id,
+                        'status' => 3,
+                    ])
+                    ->orderBy('ball desc')
+                    ->one();
+                if ($starts) {
+                    FinalExamTestStart::finish($starts);
+                }
+            }
+            $finalExam->examTestFinish();
+        }
+    }
 
     public function actionStudentGender()
     {
