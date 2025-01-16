@@ -31,7 +31,7 @@ class SettingController extends Controller
         $finalExams = FinalExam::find()
             ->where([
                 'exams_type_id' => 1,
-                'status' => [3,4],
+                'status' => [4],
                 'exam_type' => 1,
                 'is_deleted' => 0,
                 'faculty_id' => 2
@@ -55,7 +55,34 @@ class SettingController extends Controller
                     FinalExamTestStart::finish($starts);
                 }
             }
-            $finalExam->examTestFinish();
+
+
+            if (count($tests) > 0) {
+                foreach ($tests as $test) {
+                    $ball = 0;
+                    $starts = $test->finalExamTestStart;
+                    if (count($starts) > 0) {
+                        foreach ($starts as $start) {
+                            if ($start->status < 3) {
+                                $result = FinalExamTestStart::finish($start);
+                                $start = $result['data'];
+                            }
+                            if ($start->ball > $ball) {
+                                $ball = $start->ball;
+                            }
+                        }
+                    }
+                    $test->ball = $ball;
+                    $test->save(false);
+                    $mark = $test->studentMark;
+                    if ($mark->ball < $ball) {
+                        $mark->ball = $ball;
+                    }
+                    $mark->save(false);
+                }
+            }
+
+
         }
     }
 
