@@ -26,7 +26,7 @@ use yii\console\Controller;
 class SettingController extends Controller
 {
 
-    public function actionFinalExam()
+    public function actionFinalExam1()
     {
         $finalExams = FinalExam::find()
             ->where([
@@ -54,35 +54,29 @@ class SettingController extends Controller
                 if ($starts) {
                     FinalExamTestStart::finish($starts);
                 }
-            }
 
-
-            if (count($tests) > 0) {
-                foreach ($tests as $test) {
-                    $ball = 0;
-                    $starts = $test->finalExamTestStart;
-                    if (count($starts) > 0) {
-                        foreach ($starts as $start) {
-                            if ($start->status < 3) {
-                                $result = FinalExamTestStart::finish($start);
-                                $start = $result['data'];
-                            }
-                            if ($start->ball > $ball) {
-                                $ball = $start->ball;
-                            }
+                $ball = 0;
+                $starts = $test->finalExamTestStart;
+                if (count($starts) > 0) {
+                    foreach ($starts as $start) {
+                        if ($start->status < 3) {
+                            $result = FinalExamTestStart::finish($start);
+                            $start = $result['data'];
+                        }
+                        if ($start->ball > $ball) {
+                            $ball = $start->ball;
                         }
                     }
-                    $test->ball = $ball;
-                    $test->save(false);
-                    $mark = $test->studentMark;
-                    if ($mark->ball < $ball) {
-                        $mark->ball = $ball;
-                    }
-                    $mark->save(false);
                 }
+                $test->ball = $ball;
+                $test->save(false);
+                $mark = $test->studentMark;
+                if ($mark->ball < $ball) {
+                    $mark->ball = $ball;
+                }
+                $mark->save(false);
+
             }
-
-
         }
     }
 
