@@ -31,7 +31,7 @@ class SettingController extends Controller
         $finalExams = FinalExam::find()
             ->where([
                 'exams_type_id' => 3,
-                'status' => 4,
+                'status' => 6,
                 'exam_type' => 1,
                 'is_deleted' => 0,
                 'faculty_id' => 2
