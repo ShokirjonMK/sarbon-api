@@ -310,6 +310,37 @@ class StudentMark extends \yii\db\ActiveRecord
         return ($percent25 <= $sababsiz) ? 0 : 1;
     }
 
+    public function getIs60()
+    {
+        $student_id = $this->student_id;
+        $edu_semestr_subject_id = $this->edu_semestr_subject_id;
+        $vedomst = $this->vedomst;
+
+        $ball = StudentMark::find()
+            ->where([
+                'student_id' => $student_id,
+                'edu_semestr_subject_id' => $edu_semestr_subject_id,
+                'vedomst' => $vedomst,
+                'is_deleted' => 0,
+            ])
+            ->andWhere(['in', 'exam_type_id', [1, 2, 4]])
+            ->sum('ball') ?? 0;
+
+        $controlBall = EduSemestrExamsType::find()
+            ->where([
+                'edu_semestr_subject_id' => $edu_semestr_subject_id,
+                'status' => 1,
+                'is_deleted' => 0
+            ])
+            ->andWhere(['in', 'exams_type_id', [1, 2, 4]])
+            ->sum('max_ball') ?? 0;
+
+        $percentControlBall = (int)(($controlBall * 60) / 100);
+
+        return $ball < $percentControlBall ? 0 : 1;
+    }
+
+
     public function getExamType()
     {
         return $this->hasOne(ExamsType ::className(), ['id' => 'exam_type_id']);

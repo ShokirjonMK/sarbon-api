@@ -782,9 +782,10 @@ class FinalExam extends \yii\db\ActiveRecord
                 $status = 1;
                 if ($this->exams_type_id == 3) {
                     $status = $studentMark->percent25;
+                    if ($status == 1) {
+                        $status = $studentMark->is60;
+                    }
                 }
-
-//                $ball60 = $studentMark->max_ball * 0.6;
 
                 $new = false;
                 if (!$query) {
