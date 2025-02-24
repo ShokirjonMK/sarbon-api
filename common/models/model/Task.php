@@ -223,7 +223,7 @@ class Task extends \yii\db\ActiveRecord
         if (isRole('teacher')) {
             $model->user_id = current_user_id();
         }
-        
+
         if (!$model->validate()) {
             $errors[] = $model->errors;
             $transaction->rollBack();
@@ -241,8 +241,7 @@ class Task extends \yii\db\ActiveRecord
             $model->course_id = $eduSemestr->course_id;
             $model->semestr_id = $eduSemestr->semestr_id;
             $model->save(false);
-
-            $post['group'] = '{"1":{"start_date":"2025-02-10 10:00:00", "end_date": "2025-02-13 23:59:59", "ball": 10}}';
+            
             $groups = json_decode($post['group'], true);
             dd($groups);
             if (count($groups) > 0) {
