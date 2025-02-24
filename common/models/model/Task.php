@@ -223,6 +223,10 @@ class Task extends \yii\db\ActiveRecord
         if (isRole('teacher')) {
             $model->user_id = current_user_id();
         }
+        $post['group'] = str_replace("'", "", $post['group']);
+        $groups = json_decode(str_replace("'", "", $post['group']));
+        dd($groups);
+        
         if (!($model->validate())) {
             $errors[] = $model->errors;
             $transaction->rollBack();
@@ -241,7 +245,61 @@ class Task extends \yii\db\ActiveRecord
             $model->semestr_id = $eduSemestr->semestr_id;
             $model->save(false);
 
-
+            $post['group'] = str_replace("'", "", $post['group']);
+            $groups = json_decode(str_replace("'", "", $post['group']));
+            dd($groups);
+            if (count($groups) > 0) {
+                TaskGroup::updateAll(['is_deleted' => 1],['task_id' => $model->id, 'is_deleted' => 0]);
+                foreach ($groups as $group => $item) {
+                    $group = Group::findOne($group);
+                    if ($group) {
+                        $taskGroup = TaskGroup::findOne([
+                            'task_id' => $model->id,
+                            'group_id' => $group,
+                        ]);
+                        if ($taskGroup) {
+                            $taskGroup->edu_plan_id = $model->edu_plan_id;
+                            $taskGroup->edu_semestr_id = $model->edu_semestr_id;
+                            $taskGroup->subject_id = $model->subject_id;
+                            $taskGroup->user_id = $model->user_id;
+                            $taskGroup->faculty_id = $model->faculty_id;
+                            $taskGroup->direction_id = $model->direction_id;
+                            $taskGroup->edu_year_id = $model->edu_year_id;
+                            $taskGroup->course_id = $model->course_id;
+                            $taskGroup->semestr_id = $model->semestr_id;
+                            $taskGroup->ball = $item->ball;
+                            $taskGroup->start_time = strtotime($item->start_time);
+                            $taskGroup->end_time = strtotime($item->end_time);
+                            $taskGroup->status = $item->status;
+                            $taskGroup->save(false);
+                        } else {
+                            $taskGroup = new TaskGroup();
+                            $taskGroup->task_id = $model->id;
+                            $taskGroup->group_id = $group->id;
+                            $taskGroup->edu_plan_id = $model->edu_plan_id;
+                            $taskGroup->edu_semestr_id = $model->edu_semestr_id;
+                            $taskGroup->edu_semestr_subject_id = $model->edu_semestr_subject_id;
+                            $taskGroup->subject_id = $model->subject_id;
+                            $taskGroup->exam_type_id = $model->exam_type_id;
+                            $taskGroup->user_id = $model->user_id;
+                            $taskGroup->faculty_id = $model->faculty_id;
+                            $taskGroup->direction_id = $model->direction_id;
+                            $taskGroup->edu_year_id = $model->edu_year_id;
+                            $taskGroup->course_id = $model->course_id;
+                            $taskGroup->semestr_id = $model->semestr_id;
+                            $taskGroup->ball = $item->ball;
+                            $taskGroup->start_time = strtotime($item->start_time);
+                            $taskGroup->end_time = strtotime($item->end_time);
+                            $taskGroup->status = $item->status;
+                            $taskGroup->save(false);
+                        }
+                    } else {
+                        $errors[] = [_e('Group Id not found')];
+                    }
+                }
+            } else {
+                $errors[] = [_e('groups not fount')];
+            }
 
         } else {
             $errors[] = [_e('Edu Semestr Subject not found.')];

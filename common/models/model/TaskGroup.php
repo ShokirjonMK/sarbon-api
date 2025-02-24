@@ -10,6 +10,8 @@ use yii\behaviors\TimestampBehavior;
  * This is the model class for table "building".
  *
  * @property int $id
+ * @property int $task_id
+ * @property int $group_id
  * @property int $edu_plan_id
  * @property int $edu_semestr_id
  * @property int $edu_semestr_subject_id
