@@ -223,9 +223,7 @@ class Task extends \yii\db\ActiveRecord
         if (isRole('teacher')) {
             $model->user_id = current_user_id();
         }
-
-        dd($model);
-
+        
         if (!$model->validate()) {
             $errors[] = $model->errors;
             $transaction->rollBack();
