@@ -1,6 +1,8 @@
 <?php
 
 $controllers = [
+    'task',
+    'task-group',
     'passport-get-data',
     'room-ip',
     'student-group',
