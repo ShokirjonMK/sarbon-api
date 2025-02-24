@@ -224,7 +224,9 @@ class Task extends \yii\db\ActiveRecord
             $model->user_id = current_user_id();
         }
 
-        if (!($model->validate())) {
+        dd($model);
+
+        if (!$model->validate()) {
             $errors[] = $model->errors;
             $transaction->rollBack();
             return simplify_errors($errors);
