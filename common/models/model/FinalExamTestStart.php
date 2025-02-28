@@ -400,7 +400,7 @@ class FinalExamTestStart extends \yii\db\ActiveRecord
         $ball = round(($mark->max_ball / $subject->question_count) * $correct);
 
         $maxBall = $mark->max_ball;
-        if ($mark->faculty_id == 2) {
+//        if ($mark->faculty_id == 2) {
             $minBall30 = $maxBall * 0.3;
             $minBall60 = $maxBall * 0.6;
             if ($minBall30 <= $ball && $minBall60 > $ball) {
@@ -409,7 +409,7 @@ class FinalExamTestStart extends \yii\db\ActiveRecord
                 $randBall = round($maxBall * ($randBall / 100));
                 $ball = $randBall;
             }
-        }
+//        }
 
         if ($model->status == 2) {
             if ($model->start_time <= $time && $model->finish_time > $time) {
