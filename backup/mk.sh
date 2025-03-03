@@ -7,11 +7,11 @@ CHAT_ID="813225336"
 now=$(date +%Y-%m-%d_%H-%M-%S)
 
 # Oldindan belgilangan qiymatlar
-PROJECT_NAME="impulse"
-REPO_DIR_API="/home/dev-1/apps/impuls/impuls-api"
+PROJECT_NAME="sarbon"
+REPO_DIR_API="/home/dev-1/apps/sarbon/sarbon-api"
 DOCKERFILE_API="$REPO_DIR_API/docker-compose.yml"
-DB_NAME_API="impulse-api"
-DB_PASS_API="impulseMK"
+DB_NAME_API="sarbon_new"
+DB_PASS_API="sarsarBON@mk"
 OUTPUT_FILE_API="$REPO_DIR_API/backup/$PROJECT_NAME-$now.sql"
 ZIP_FILE="$REPO_DIR_API/backup/$PROJECT_NAME-$now.tar.gz"
 
