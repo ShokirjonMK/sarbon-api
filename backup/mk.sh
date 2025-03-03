@@ -1,6 +1,6 @@
 
 # Telegram ma'lumotlari
-BOT_TOKEN="5216479765:AAEAT2C19Rev5JMBYqhPj_GyTNSVm1-BNYc"
+API_TOKEN="7496415762:AAFr44g8vdOwkb5DX81sPUICbDKQmk4wAQs"
 CHAT_ID="813225336"
 
 # Hozirgi sana va vaqtni olish
